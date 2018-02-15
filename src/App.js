@@ -8,6 +8,7 @@ import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js'
 
 class App extends Component {
+
 	render() {
 		return (
             <div id="App">
@@ -17,8 +18,11 @@ class App extends Component {
                     <img src={logo} id="react-logo" alt="react-logo"/>
 
                 </header>
-                <ControlPanel/>
-                <MapDisplay/>
+	            <div id="App-body">
+		            <ControlPanel/>
+		            <MapDisplay/>
+	            </div>
+
             </div>
 		);
 	}
