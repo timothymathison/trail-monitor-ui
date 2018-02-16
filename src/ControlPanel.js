@@ -6,7 +6,7 @@ class ControlPanel extends Component {
 	render() {
 		return(
 			<div id="control-panel" className="flexDefault">
-				<ControlToggle value={ false }/>
+				<ControlToggle value={ false } handler={ () => {}}/>
 			</div>
 		);
 	}

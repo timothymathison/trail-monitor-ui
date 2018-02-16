@@ -28,7 +28,7 @@ class App extends Component {
                 </header>
 	            <div id="App-body">
 		            <ControlPanel/>
-		            <MapDisplay/>
+		            <MapDisplay dataType="circle"/>
 	            </div>
 
             </div>

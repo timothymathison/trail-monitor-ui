@@ -5,6 +5,10 @@
     top: 0;
     bottom: 0;
     text-align: center;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-around;
+    overflow: auto;
 }
 
 #polaris-logo {
@@ -37,7 +41,6 @@
 #App-header {
     background-color: #222;
     box-sizing: border-box;
-    max-height: 8%;
     min-height: 50px !important;
     height: 60px;
     width: 100%;
@@ -52,20 +55,18 @@
 
 #App-body {
     width: 100%;
-    min-height: 92%;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-around;
     align-content: stretch;
     align-items: stretch;
+    flex-grow: 5;
 }
 
 #control-panel {
     background-color: gray;
     width: 20%;
     min-width: 200px;
-    /*height: auto;*/
-    /*min-height: 600px;*/
     flex-grow: 1;
 }
 
@@ -73,12 +74,12 @@
     background-color: lightgray;
     width: 80%;
     min-height: 400px;
-    flex-grow: 2;
+    flex-grow: 4;
 }
 
 #toggle {
     margin: 10px;
-    min-width: 70%;
+    min-width: 200px;
 }
 
 .flexDefault {

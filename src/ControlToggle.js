@@ -5,12 +5,21 @@ class ControlToggle extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			value : props.value
+			value: props.value
 		}
 	}
 
+	componentWillReceiveProps(newProps) {
+		this.setState({ value: newProps.value });
+	}
+
+	shouldComponentUpdate(newProps, newState) {
+		return newProps.value !== this.state.value;
+	}
+
 	handler = (value) => {
-		this.setState({ value : !value })
+		this.setState({ value: !value });
+		this.props.handler(!value);
 	};
 
 	render() {
