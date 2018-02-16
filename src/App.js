@@ -8,6 +8,14 @@ import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js'
 
 class App extends Component {
+	cache = {};
+
+	constructor(props) {
+		super(props);
+		this.state = {
+
+		};
+	}
 
 	render() {
 		return (
