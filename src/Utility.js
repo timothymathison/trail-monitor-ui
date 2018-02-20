@@ -14,7 +14,7 @@ class Utility {
 							"coordinates": [-92.958210, 45.363131]
 						},
 						"properties": {
-							"value": 1
+							"value": 2
 						}
 					},
 					{

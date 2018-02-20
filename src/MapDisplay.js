@@ -6,7 +6,9 @@ const Map = ReactMapboxGl({
 });
 
 class MapDisplay extends Component {
-	defaultZoom = [16];
+	defaultZoom = [9];
+	transitionZoom = 10; //zoom at which heatmap transitions to points
+	valueMax = 10;
 
 	constructor(props) {
 		super(props);
@@ -47,11 +49,34 @@ class MapDisplay extends Component {
 	// 	};
 	// };
 
-	plotCircles = () => {
+	plotPoints = () => {
 		return (
 			<React.Fragment>
-				<Source id="circleData" type="feature" geoJsonSource={this.state.geoJsonData}/>
-				<Layer id="dotLayer" sourceId="circleData" type="circle" paint={{'circle-radius': {'base': 1.75, 'stops': [[12, 2], [22, 50]]}, "circle-color": "#ff0000"}}>
+				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
+				<Layer id="dotLayer" sourceId="pointData" type="circle" minzoom={this.transitionZoom - 1} paint={{
+					'circle-radius': {
+						'base': 1.75,
+						'stops': [[12, 2], [20, 50]]
+					},
+					"circle-color": [
+						"interpolate",
+						["linear"],
+						["get", "value"],
+						1, "rgba(33,102,172,0)",
+						3, "rgb(103,169,207)",
+						5, "rgb(209,229,240)",
+						7, "rgb(253,219,199)",
+						9, "rgb(239,138,98)",
+						10, "rgb(178,24,43)"
+					],
+					"circle-opacity": [
+						"interpolate",
+						["linear"],
+						["zoom"],
+						this.transitionZoom - 1, 0,
+						this.transitionZoom + 1, 1
+					]
+				}}>
 				</Layer>
 			</React.Fragment>
 		);
@@ -60,15 +85,15 @@ class MapDisplay extends Component {
 	plotHeatMap = () => {
 		return (
 			<React.Fragment>
-				<Source id="heatMapData" geoJsonSource={this.state.geoJsonData}/>
-				<Layer id="heatmap" sourceId="heatMapData" type="heatmap" paint={{
+				<Source id="heatData" geoJsonSource={this.state.geoJsonData}/>
+				<Layer id="heatmap" sourceId="heatData" type="heatmap" maxzoom={this.transitionZoom + 1} paint={{
 					// Increase the heatmap weight based on frequency and property magnitude
 					"heatmap-weight": [
 						"interpolate",
 						["linear"],
 						["get", "value"],
 						0, 0,
-						10, 1
+						this.valueMax, 1
 					],
 					// Increase the heatmap color weight weight by zoom level
 					// heatmap-intensity is a multiplier on top of heatmap-weight
@@ -77,7 +102,7 @@ class MapDisplay extends Component {
 						["linear"],
 						["zoom"],
 						0, 1,
-						9, 3
+						this.transitionZoom, 3
 					],
 					// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
 					// Begin color ramp at 0-stop with a 0-transparancy color
@@ -98,17 +123,17 @@ class MapDisplay extends Component {
 						"interpolate",
 						["linear"],
 						["zoom"],
-						0, 2,
-						9, 20
+						0, 1,
+						this.transitionZoom, 10
 					],
 					// Transition from heatmap to circle layer by zoom level
 					"heatmap-opacity": [
 						"interpolate",
 						["linear"],
 						["zoom"],
-						7, 1,
-						9, 0
-					],
+						this.transitionZoom - 1, 1,
+						this.transitionZoom + 1, 0
+					]
 				}}>
 				</Layer>
 			</React.Fragment>
@@ -124,7 +149,7 @@ class MapDisplay extends Component {
 					center = {[-92.958210, 45.363131]}
 					zoom = {this.defaultZoom}>
 					<ZoomControl/>
-					{/*{this.plotCircles()}*/}
+					{this.plotPoints()}
 					{this.plotHeatMap()}
 					{/*<Layer*/}
 						{/*type="symbol"*/}
