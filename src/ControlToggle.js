@@ -23,9 +23,10 @@ class ControlToggle extends Component {
 	};
 
 	render() {
+		console.log("Toggle render called");
 		return(
 			<div id="toggle" className="flexDefault">
-				<h4>Control Something</h4>
+				<h4>{this.props.label}</h4>
 				<ToggleButton
 					value={ this.state.value }
 					onToggle={ this.handler }

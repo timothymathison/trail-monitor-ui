@@ -11,49 +11,108 @@ class MapDisplay extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			geoJsonData: this.buildData(props.data),
+			geoJsonData: props.data,
 			dataType: props.dataType
 		};
 	}
 
 	componentWillReceiveProps(newProps) {
-		this.setState({ data: this.buildData(newProps.data) });
+		this.setState({ geoJsonData: newProps.data, dataType: newProps.dataType });
 	}
 
-	shouldComponentUpdate(newProps, newState) {
-		return true;
-	}
+	// shouldComponentUpdate(newProps, newState) {
+	// 	return true;
+	// }
 
-	buildData = (rawData) => {
-		return {
-			"type": "geojson",
-			"data": {
-				"type": "Feature",
-				"geometry": {
-					"type": "MultiPoint",
-					"coordinates": [
-						[-92.958210, 45.363131],
-						[-92.958210, 45.364131],
-						[-92.958210, 45.365131],
-						[-92.958210, 45.366131]
-					]
-				}
-				// "properties": {
-				// 	"title": "Mapbox DC",
-				// 	"marker-symbol": "monument"
-				// }
-			}
-		};
-	};
+	// buildData = (rawData) => {
+	// 	return {
+	// 		"type": "geojson",
+	// 		"data": {
+	// 			"type": "Feature",
+	// 			"geometry": {
+	// 				"type": "MultiPoint",
+	// 				"coordinates": [
+	// 					[-92.958210, 45.363131],
+	// 					[-92.958210, 45.364131],
+	// 					[-92.958210, 45.365131],
+	// 					[-92.958210, 45.366131]
+	// 				]
+	// 			},
+	// 			"properties": {
+	// 				// "title": "Mapbox DC",
+	// 				// "marker-symbol": "monument"
+	// 				"circle-color": "#ff0000"
+	// 			}
+	// 		}
+	// 	};
+	// };
 
 	plotCircles = () => {
 		return (
 			<React.Fragment>
-				<Source id="dotData" geoJsonSource={this.state.geoJsonData}/>
-				<Layer id="dotLayer" sourceId="dotData" type="circle" paint={{'circle-radius': {'base': 1.75, 'stops': [[12, 2], [22, 180]]}, "circle-color": "#ff0000"}}>
+				<Source id="circleData" type="feature" geoJsonSource={this.state.geoJsonData}/>
+				<Layer id="dotLayer" sourceId="circleData" type="circle" paint={{'circle-radius': {'base': 1.75, 'stops': [[12, 2], [22, 50]]}, "circle-color": "#ff0000"}}>
 				</Layer>
 			</React.Fragment>
 		);
+	};
+
+	plotHeatMap = () => {
+		return (
+			<React.Fragment>
+				<Source id="heatMapData" geoJsonSource={this.state.geoJsonData}/>
+				<Layer id="heatmap" sourceId="heatMapData" type="heatmap" paint={{
+					// Increase the heatmap weight based on frequency and property magnitude
+					"heatmap-weight": [
+						"interpolate",
+						["linear"],
+						["get", "value"],
+						0, 0,
+						10, 1
+					],
+					// Increase the heatmap color weight weight by zoom level
+					// heatmap-intensity is a multiplier on top of heatmap-weight
+					"heatmap-intensity": [
+						"interpolate",
+						["linear"],
+						["zoom"],
+						0, 1,
+						9, 3
+					],
+					// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+					// Begin color ramp at 0-stop with a 0-transparancy color
+					// to create a blur-like effect.
+					"heatmap-color": [
+						"interpolate",
+						["linear"],
+						["heatmap-density"],
+						0, "rgba(33,102,172,0)",
+						0.2, "rgb(103,169,207)",
+						0.4, "rgb(209,229,240)",
+						0.6, "rgb(253,219,199)",
+						0.8, "rgb(239,138,98)",
+						1, "rgb(178,24,43)"
+					],
+					// Adjust the heatmap radius by zoom level
+					"heatmap-radius": [
+						"interpolate",
+						["linear"],
+						["zoom"],
+						0, 2,
+						9, 20
+					],
+					// Transition from heatmap to circle layer by zoom level
+					"heatmap-opacity": [
+						"interpolate",
+						["linear"],
+						["zoom"],
+						7, 1,
+						9, 0
+					],
+				}}>
+				</Layer>
+			</React.Fragment>
+		)
 	};
 
 	render() {
@@ -65,8 +124,8 @@ class MapDisplay extends Component {
 					center = {[-92.958210, 45.363131]}
 					zoom = {this.defaultZoom}>
 					<ZoomControl/>
-					{this.plotCircles()}
-
+					{/*{this.plotCircles()}*/}
+					{this.plotHeatMap()}
 					{/*<Layer*/}
 						{/*type="symbol"*/}
 						{/*id="marker"*/}

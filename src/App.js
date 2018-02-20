@@ -4,8 +4,9 @@ import logo from './logo.svg';
 import polaris from './polaris.png';
 import './App.css';
 
+import Utility from './Utility.js';
 import ControlPanel from './ControlPanel.js';
-import MapDisplay from './MapDisplay.js'
+import MapDisplay from './MapDisplay.js';
 
 class App extends Component {
 	cache = {};
@@ -13,9 +14,14 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-
+			displayAll: false
 		};
 	}
+
+	displayAllHandler = (newValue) => {
+		this.setState({ displayAll: newValue });
+		console.log("Display data value: " + newValue);
+	};
 
 	render() {
 		return (
@@ -27,8 +33,8 @@ class App extends Component {
 
                 </header>
 	            <div id="App-body">
-		            <ControlPanel/>
-		            <MapDisplay dataType="circle"/>
+		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}/>
+		            <MapDisplay dataType="circle" data={Utility.buildData({})}/>
 	            </div>
 
             </div>
