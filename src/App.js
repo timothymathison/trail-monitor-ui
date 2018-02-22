@@ -34,7 +34,7 @@ class App extends Component {
                 </header>
 	            <div id="App-body">
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}/>
-		            <MapDisplay dataType="circle" data={Utility.buildData({})}/>
+		            <MapDisplay dataType="circle" data={Utility.buildData({})} dataVisible={this.state.displayAll}/>
 	            </div>
 
             </div>

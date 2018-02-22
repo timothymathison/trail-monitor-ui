@@ -64,7 +64,7 @@
 }
 
 #control-panel {
-    background-color: gray;
+    background-color: #8a8b8d;/*gray;*/
     width: 20%;
     min-width: 200px;
     flex-grow: 1;

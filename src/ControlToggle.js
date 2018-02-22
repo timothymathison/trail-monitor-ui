@@ -32,7 +32,7 @@ class ControlToggle extends Component {
 					onToggle={ this.handler }
 					colors={{
 						active: {
-							base: '#365ba5'
+							base: '#2a57ab'//'#365ba5'
 						}
 					}}
 				/>
