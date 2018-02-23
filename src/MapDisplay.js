@@ -5,64 +5,42 @@ const Map = ReactMapboxGl({
 	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
 });
 
-const distanceUnits = "mi";
-const dataColorPalette = ["#2dc937", "#99c140", "#e7b416", "#db7b2b", "#cc3232"];
+const distanceUnits = "mi"; //distance units used for scale ruler
+const dataColorPalette = ["#2dc937", "#99c140", "#e7b416", "#db7b2b", "#cc3232"]; //range of colors for data visualization
 //const dataColorPallette = ["rgba(33,102,172,0)", "rgb(103,169,207)", "rgb(209,229,240)", "rgb(253,219,199)", "rgb(239,138,98)", "rgb(178,24,43)"];
 
 class MapDisplay extends Component {
 	defaultZoom = [9];
 	transitionZoom = 12; //zoom at which heatmap transitions to points
-	valueMax = 10;
+	valueMax = 10; //max trail point roughness value
 
 	constructor(props) {
 		super(props);
 		this.state = {
-			geoJsonData: props.data,
+			geoJsonData: props.trailPointData,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible
 		};
+		console.log(this.state.geoJsonData);
 	}
 
 	componentWillReceiveProps(newProps) {
 		this.setState({
-			geoJsonData: newProps.data,
+			geoJsonData: newProps.trailPointData,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible
 		});
 	}
 
-	// shouldComponentUpdate(newProps, newState) {
-	// 	return true;
-	// }
-
-	// buildData = (rawData) => {
-	// 	return {
-	// 		"type": "geojson",
-	// 		"data": {
-	// 			"type": "Feature",
-	// 			"geometry": {
-	// 				"type": "MultiPoint",
-	// 				"coordinates": [
-	// 					[-92.958210, 45.363131],
-	// 					[-92.958210, 45.364131],
-	// 					[-92.958210, 45.365131],
-	// 					[-92.958210, 45.366131]
-	// 				]
-	// 			},
-	// 			"properties": {
-	// 				// "title": "Mapbox DC",
-	// 				// "marker-symbol": "monument"
-	// 				"circle-color": "#ff0000"
-	// 			}
-	// 		}
-	// 	};
-	// };
+	shouldComponentUpdate(newProps, newState) {
+		return newProps.dataVisible !== this.state.dataVisible;
+	}
 
 	plotPoints = () => {
 		return (
 			<React.Fragment>
 				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
-				<Layer id="dotLayer" sourceId="pointData" type="circle" minzoom={this.transitionZoom - 1}
+				<Layer id="pointLayer" sourceId="pointData" type="circle" minzoom={this.transitionZoom - 1}
 			        layout={{
 				       "visibility": this.state.dataVisible ? "visible" : "none",
 			        }}
@@ -99,7 +77,7 @@ class MapDisplay extends Component {
 		return (
 			<React.Fragment>
 				<Source id="heatData" geoJsonSource={this.state.geoJsonData}/>
-				<Layer id="heatmap" sourceId="heatData" type="heatmap" maxzoom={this.transitionZoom + 1}
+				<Layer id="heatmapLayer" sourceId="heatData" type="heatmap" maxzoom={this.transitionZoom + 1}
 			        layout={{
 				        "visibility": this.state.dataVisible ? "visible" : "none",
 			        }}
@@ -169,12 +147,6 @@ class MapDisplay extends Component {
 					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>
 					{this.plotPoints()}
 					{this.plotHeatMap()}
-					{/*<Layer*/}
-						{/*type="symbol"*/}
-						{/*id="marker"*/}
-						{/*layout={{ "icon-image": "marker-15" }}>*/}
-						{/*<Feature coordinates={[-92.958210, 45.363131]}/>*/}
-					{/*</Layer>*/}
 				</Map>
 			</div>
 		);

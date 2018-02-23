@@ -49,14 +49,6 @@ class Utility {
 					}
 				]
 			}
-			// "type": "geojson",
-			// "data": {
-			// 	"type": "Feature",
-			// 	"geometry": {
-			// 		"type": "Point",
-			// 		"coordinates": [-92.958210, 45.363131]
-			// 	}
-			// }
 		};
 	}
 }
