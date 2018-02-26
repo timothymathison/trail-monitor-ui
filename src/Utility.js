@@ -1,6 +1,8 @@
 
 class Utility {
 
+	//TODO: Request data from API
+
 	static buildData = (rawData) => {
 		return {
 			"type": "geojson",

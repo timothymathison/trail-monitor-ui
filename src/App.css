@@ -89,6 +89,10 @@
     align-items: flex-start;
 }
 
+.veryBold {
+    font-weight: 700;
+}
+
 h4 {
     margin: 0;
 }

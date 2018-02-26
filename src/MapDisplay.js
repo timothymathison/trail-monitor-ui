@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
 import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
 
 const Map = ReactMapboxGl({
@@ -32,7 +32,7 @@ class MapDisplay extends Component {
 		});
 	}
 
-	shouldComponentUpdate(newProps, newState) {
+	shouldComponentUpdate(newProps) {
 		return newProps.dataVisible !== this.state.dataVisible;
 	}
 
@@ -139,7 +139,7 @@ class MapDisplay extends Component {
 		return(
 			<div id="map-container">
 				<Map
-					style = "mapbox://styles/mapbox/outdoors-v10"
+					style = {"mapbox://styles/mapbox/outdoors-v10"}
 					containerStyle = {{ height: "100%", width: "100%" }}
 					center = {[-92.958210, 45.363131]}
 					zoom = {this.defaultZoom}>
