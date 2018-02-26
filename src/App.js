@@ -9,7 +9,7 @@ import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js';
 
 class App extends Component {
-	cache = {};
+	cache = {}; //TODO: dynamicaly manage data and when it needs to be fetched
 
 	constructor(props) {
 		super(props);

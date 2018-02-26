@@ -13,7 +13,7 @@ class ControlToggle extends Component {
 		this.setState({ value: newProps.value });
 	}
 
-	shouldComponentUpdate(newProps, newState) {
+	shouldComponentUpdate(newProps) {
 		return newProps.value !== this.state.value;
 	}
 
@@ -22,22 +22,45 @@ class ControlToggle extends Component {
 		this.props.handler(!value);
 	};
 
+	renderOnOff = () => {
+		return (
+			<ToggleButton
+				inactiveLabel={<X/>}
+				activeLabel={<Check/>}
+				value={ this.state.value }
+				onToggle={ this.handler }
+				colors={{
+					active: {
+						base: '#2a57ab'//'#365ba5'
+					}
+				}}
+			/>
+		)
+	};
+
 	render() {
 		console.log("Toggle render called");
 		return(
 			<div id="toggle" className="flexDefault">
 				<h4>{this.props.label}</h4>
-				<ToggleButton
-					value={ this.state.value }
-					onToggle={ this.handler }
-					colors={{
-						active: {
-							base: '#2a57ab'//'#365ba5'
-						}
-					}}
-				/>
+				{this.renderOnOff()}
+				{/*TODO: options to render different types of toggle controls*/}
 			</div>
 		);
+	}
+}
+
+class Check extends Component {
+	check = "\u2714";
+	render() {
+		return <div className="veryBold">{this.check}</div>
+	}
+}
+
+class X extends Component {
+	x = "X";
+	render() {
+		return <div className="veryBold">{this.x}</div>
 	}
 }
 
