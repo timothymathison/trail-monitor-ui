@@ -1,7 +1,24 @@
 
+const awsApiUrl = "";
+
 class Utility {
 
 	//TODO: Request data from API
+	requestData = (top, left, right, bottom, startime) => {
+		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&startime=" + startime;
+		let apiRequest = new XMLHttpRequest();
+
+		apiRequest.open("GET", url, true);
+		apiRequest.onreadystatechange = function () {
+			if(apiRequest.readyState === 4 && apiRequest.status === 200) {
+				console.log(JSON.parse(apiRequest.responseText));
+			} else {
+				console.log("Error");
+			}
+		};
+
+		apiRequest.send();
+	};
 
 	//builds hard coded data
 	static buildData = (rawData) => {
