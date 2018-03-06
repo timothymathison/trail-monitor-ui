@@ -9,9 +9,13 @@ const distanceUnits = "mi"; //distance units used for scale ruler
 const dataColorPalette = ["#2dc937", "#99c140", "#e7b416", "#db7b2b", "#cc3232"]; //range of colors for data visualization
 //const dataColorPallette = ["rgba(33,102,172,0)", "rgb(103,169,207)", "rgb(209,229,240)", "rgb(253,219,199)", "rgb(239,138,98)", "rgb(178,24,43)"];
 
+
+const mapStyleDark = "mapbox://styles/mapbox/dark-v9";
+const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
+
 class MapDisplay extends Component {
 	defaultZoom = [9];
-	transitionZoom = 12; //zoom at which heatmap transitions to points
+	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
 
 	constructor(props) {
@@ -19,7 +23,8 @@ class MapDisplay extends Component {
 		this.state = {
 			geoJsonData: props.trailPointData,
 			dataType: props.dataType,
-			dataVisible: props.dataVisible
+			dataVisible: props.dataVisible,
+			topoMap: props.topoMap
 		};
 		console.log(this.state.geoJsonData);
 	}
@@ -28,12 +33,13 @@ class MapDisplay extends Component {
 		this.setState({
 			geoJsonData: newProps.trailPointData,
 			dataType: newProps.dataType,
-			dataVisible: newProps.dataVisible
+			dataVisible: newProps.dataVisible,
+			topoMap: newProps.topoMap
 		});
 	}
 
 	shouldComponentUpdate(newProps) {
-		return newProps.dataVisible !== this.state.dataVisible;
+		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap;
 	}
 
 	plotPoints = () => {
@@ -117,7 +123,7 @@ class MapDisplay extends Component {
 							"interpolate",
 							["linear"],
 							["zoom"],
-							0, 2,
+							0, 1,
 							this.transitionZoom, 8
 						],
 						// Transition from heatmap to circle layer by zoom level
@@ -139,7 +145,7 @@ class MapDisplay extends Component {
 		return(
 			<div id="map-container">
 				<Map
-					style = {"mapbox://styles/mapbox/outdoors-v10"}
+					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
 					center = {[-92.958210, 45.363131]}
 					zoom = {this.defaultZoom}>

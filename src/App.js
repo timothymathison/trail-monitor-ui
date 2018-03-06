@@ -14,13 +14,18 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			displayAll: false
+			displayAll: false,
+			topoMap: false
 		};
 	}
 
 	displayAllHandler = (newValue) => {
 		this.setState({ displayAll: newValue });
 		console.log("Display data value: " + newValue);
+	};
+
+	mapTypeHandler = (newValue) => {
+		this.setState({ topoMap: newValue });
 	};
 
 	render() {
@@ -33,8 +38,12 @@ class App extends Component {
 
                 </header>
 	            <div id="App-body">
-		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}/>
-		            <MapDisplay dataType="trailRoughness" trailPointData={Utility.buildData({})} dataVisible={this.state.displayAll}/>
+		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
+		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
+		            />
+		            <MapDisplay dataType="trailRoughness" trailPointData={Utility.buildData({})}
+		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
+		            />
 	            </div>
 
             </div>
