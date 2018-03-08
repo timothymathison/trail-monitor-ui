@@ -11,9 +11,21 @@ class Utility {
 		apiRequest.open("GET", url, true);
 		apiRequest.onreadystatechange = function () {
 			if(apiRequest.readyState === 4 && apiRequest.status === 200) {
-				console.log(JSON.parse(apiRequest.responseText));
+				try {
+					console.log(JSON.parse(apiRequest.responseText));
+				} catch (e) {
+					console.error("Could not parse response text")
+				}
+
+			} else if(apiRequest.readyState === 4 && apiRequest.status === 400){
+				try {
+					console.error("Server responded with bad request - message: " + JSON.parse(apiRequest.responseText).message);
+				} catch (e) {
+					console.error("Server responded with bad request");
+					console.error("Could not parse response text")
+				}
 			} else {
-				console.log("Error");
+				console.error("Server Error when requesting new data");
 			}
 		};
 

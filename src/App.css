@@ -85,16 +85,18 @@
 .loading {
     position: fixed;
     z-index: 100000;
-    top: 50%;
-    left: 50%;
+    top: 48%;
+    left: 45%;
     color: #2a57ab;
+    text-align: center;
+    max-width: 200px;
 }
 
 .flexDefault {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-around;
-    align-items: flex-start;
+    align-items: center;
     align-content: flex-start;
 }
 

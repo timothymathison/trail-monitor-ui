@@ -57,7 +57,7 @@ class MapDisplay extends Component {
 			let center = [(left + right) / 2, (top + bottom) / 2];
 			// console.log(center);
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-
+			this.props.updateMapHandler(top, bottom, left, right); //check if map data needs to be updated
 		}
 
 	};

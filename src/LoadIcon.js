@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { HashLoader } from 'react-spinners';
+import { HashLoader, RingLoader } from 'react-spinners';
 
 class LoadIcon extends Component {
 	constructor(props) {
@@ -19,10 +19,10 @@ class LoadIcon extends Component {
 
 	render() {
 		return (
-			<div className="loading">
+			<div className="loading flexDefault">
 				<HashLoader color="#2a57ab" size={100} loading={this.state.loading}/>
 				<br/>
-				<div>Building...</div>
+				Building Visual...
 			</div>
 		);
 	}

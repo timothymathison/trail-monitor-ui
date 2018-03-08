@@ -10,14 +10,21 @@ import MapDisplay from './MapDisplay.js';
 import LoadIcon from './LoadIcon'
 
 class App extends Component {
-	cache = {}; //TODO: dynamicaly manage data and when it needs to be fetched
+	cache = {
+		pastDay: {},
+		pastWeek: {},
+		pastMonth: {},
+		pastYear: {},
+		allTime: {}
+	}; //TODO: dynamicaly manage data and when it needs to be fetched
 
 	constructor(props) {
 		super(props);
 		this.state = {
 			displayAll: false,
 			topoMap: false,
-			isLoading: true
+			isLoading: true,
+			trailPointData: Utility.buildData()
 		};
 	}
 
@@ -32,8 +39,21 @@ class App extends Component {
 		this.setState({ topoMap: newValue });
 	};
 
+	//check if data is present for all of current view window; if not, request new data from cloud service
 	updateMapHandler = (top, bot, left, right) => {
 
+	};
+
+	newDataHandler = (geoJson) => {
+
+	};
+
+	loading = () => {
+		this.setState({ isLoading: true });
+	};
+
+	notLoading = () => {
+		this.setState({ isLoading: false });
 	};
 
 	render() {
@@ -49,7 +69,7 @@ class App extends Component {
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		            />
-		            <MapDisplay dataType="trailRoughness" trailPointData={Utility.buildData({})}
+		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
 		                        updateHandler={this.updateMapHandler}
 		            />
