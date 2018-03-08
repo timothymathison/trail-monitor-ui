@@ -4,7 +4,7 @@ const awsApiUrl = "";
 class Utility {
 
 	//TODO: Request data from API
-	requestData = (top, left, right, bottom, startime) => {
+	static requestData = (top, left, right, bottom, startime) => {
 		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&startime=" + startime;
 		let apiRequest = new XMLHttpRequest();
 
@@ -18,6 +18,25 @@ class Utility {
 		};
 
 		apiRequest.send();
+	};
+
+	//Reduce-Coordinate-Dimension - Generates a unique linear value (tile identifier/coordinate) for each integer latitude/longitude combination
+	static redCoordDim = (lng, lat) => {
+		return Math.floor(lng) * 200 + Math.floor(lat);
+	};
+
+	static listOfTiles = (top, bot, left, right) => {
+		let height = top - bot + 1;
+		let width = right - left + 1;
+		let tileCoords = [];
+
+		for(let lat = top; lat >= bot; lat--) {
+			for(let lng = left; lng <= right; lng++) {
+				tileCoords.push(this.redCoordDim(lng, lat)); //add single dimension tile coordinates to list
+			}
+		}
+
+		return tileCoords;
 	};
 
 	//builds hard coded data

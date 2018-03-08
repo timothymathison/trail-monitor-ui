@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
 
+import Utility from './Utility.js';
+
 const Map = ReactMapboxGl({
 	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
 });
@@ -21,6 +23,7 @@ class MapDisplay extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			center: [-92.958210, 45.363131], //default
 			geoJsonData: props.trailPointData,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
@@ -42,7 +45,26 @@ class MapDisplay extends Component {
 		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap;
 	}
 
+	//handle and react to map events
+	handleMapEvents = (map, event) => {
+		if(event.type === "dragend") {
+			let bounds = map.getBounds;
+			// console.log(map.getBounds());
+			let top = map.getBounds()._ne.lat;
+			let bottom = map.getBounds()._sw.lat;
+			let left = map.getBounds()._sw.lng;
+			let right = map.getBounds()._ne.lng;
+			let center = [(left + right) / 2, (top + bottom) / 2];
+			// console.log(center);
+			this.setState({ center: center }); //update center so later re-renders don't re-position map
+
+		}
+
+	};
+
+	//plots data as colored dots
 	plotPoints = () => {
+		console.log("Map rendered");
 		return (
 			<React.Fragment>
 				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
@@ -79,6 +101,7 @@ class MapDisplay extends Component {
 		);
 	};
 
+	//plots data as a generic heatmap (NOT lines)
 	plotHeatMap = () => {
 		return (
 			<React.Fragment>
@@ -147,8 +170,9 @@ class MapDisplay extends Component {
 				<Map
 					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
-					center = {[-92.958210, 45.363131]}
-					zoom = {this.defaultZoom}>
+					center = {this.state.center}
+					zoom = {this.defaultZoom}
+					onDragEnd = {this.handleMapEvents}>
 					<ZoomControl/>
 					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>
 					{this.plotPoints()}

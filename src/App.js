@@ -7,6 +7,7 @@ import './App.css';
 import Utility from './Utility.js';
 import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js';
+import LoadIcon from './LoadIcon'
 
 class App extends Component {
 	cache = {}; //TODO: dynamicaly manage data and when it needs to be fetched
@@ -15,17 +16,24 @@ class App extends Component {
 		super(props);
 		this.state = {
 			displayAll: false,
-			topoMap: false
+			topoMap: false,
+			isLoading: true
 		};
 	}
 
+	//turns all data display on/off
 	displayAllHandler = (newValue) => {
 		this.setState({ displayAll: newValue });
 		console.log("Display data value: " + newValue);
 	};
 
+	//toggles the style of map - topographic or dark
 	mapTypeHandler = (newValue) => {
 		this.setState({ topoMap: newValue });
+	};
+
+	updateMapHandler = (top, bot, left, right) => {
+
 	};
 
 	render() {
@@ -43,9 +51,10 @@ class App extends Component {
 		            />
 		            <MapDisplay dataType="trailRoughness" trailPointData={Utility.buildData({})}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
+		                        updateHandler={this.updateMapHandler}
 		            />
 	            </div>
-
+				<LoadIcon isLoading={this.state.isLoading}/>
             </div>
 		);
 	}

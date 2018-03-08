@@ -82,6 +82,14 @@
     min-width: 200px;
 }
 
+.loading {
+    position: fixed;
+    z-index: 100000;
+    top: 50%;
+    left: 50%;
+    color: #2a57ab;
+}
+
 .flexDefault {
     display: flex;
     flex-flow: row wrap;
