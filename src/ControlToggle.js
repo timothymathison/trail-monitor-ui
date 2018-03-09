@@ -58,12 +58,10 @@ class ControlToggle extends Component {
 	};
 
 	render() {
-		console.log("Toggle render called");
 		return(
 			<div id="toggle" className="flexDefault">
 				<h4>{this.props.label}</h4>
 				{this.props.type !== "select" ? this.renderOnOff() : this.renderSelect()}
-				{/*TODO: options to render different types of toggle controls*/}
 			</div>
 		);
 	}

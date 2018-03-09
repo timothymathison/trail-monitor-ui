@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
 import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
 
-import Utility from './Utility.js';
-
 const Map = ReactMapboxGl({
 	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
 });
@@ -19,7 +17,7 @@ class MapDisplay extends Component {
 	defaultZoom = [9];
 	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
-	map; //not used yet
+	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 
 	constructor(props) {
 		super(props);
@@ -30,9 +28,7 @@ class MapDisplay extends Component {
 			dataVisible: props.dataVisible,
 			topoMap: props.topoMap
 		};
-		this.map = null;//use this?
-		console.log(this.state.geoJsonData);
-		console.log(Map);
+		this.map = null; //null to start until its loaded
 	}
 
 	componentWillReceiveProps(newProps) {
@@ -50,18 +46,26 @@ class MapDisplay extends Component {
 
 	//handle and react to map events
 	handleMapEvents = (map, event) => {
-		if(event.type === "dragend" || event.type === "render") {
+		if(event.type === "dragend") {
 			console.log("handling map event");
-			let bounds = map.getBounds;
-			// console.log(map.getBounds());
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
 			let center = [(left + right) / 2, (top + bottom) / 2];
-			// console.log(center);
+
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
+			// this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
+		} else if(event.type === "render" && this.map === null) { // first ever render triggers data request
+			let top = map.getBounds()._ne.lat;
+			let bottom = map.getBounds()._sw.lat;
+			let left = map.getBounds()._sw.lng;
+			let right = map.getBounds()._ne.lng;
+			console.log("handling map event");
+			this.props.updateHandler(top, bottom, left, right);
+		}
+		if(this.map !== map) {
+			this.map = map; //update copy of pointer to map
 		}
 
 	};

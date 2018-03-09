@@ -21,8 +21,8 @@ class LoadIcon extends Component {
 		return (
 			<div className="loading">
 				<HashLoader color="#2a57ab" size={100} loading={this.state.loading}/>
-				<br/>
-				Building Visual...
+				{/*<br/>*/}
+				{/*Building Visual...*/}
 			</div>
 		);
 	}

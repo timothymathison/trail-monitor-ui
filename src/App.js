@@ -9,6 +9,14 @@ import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js';
 import LoadIcon from './LoadIcon'
 
+const emptyTrailPoints = {
+	type: "geojson",
+	data: {
+		type: "FeatureCollection",
+		features: []
+	}
+};
+
 class App extends Component {
 	cache = {
 		pastDay: {},
@@ -24,9 +32,9 @@ class App extends Component {
 			displayAll: false,
 			topoMap: false,
 			isLoading: true,
-			trailPointData: Utility.buildData()
+			trailPointData: emptyTrailPoints
 		};
-		Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
+		// Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
 	}
 
 	//turns all data display on/off
@@ -42,19 +50,31 @@ class App extends Component {
 
 	//check if data is present for all of current view window; if not, request new data from cloud service
 	updateMapHandler = (top, bot, left, right) => {
-
+		this.setState({ isLoading: true });
+		Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
 	};
 
 	newDataHandler = (msg, geoJson) => {
-
-	};
-
-	loading = () => {
-		this.setState({ isLoading: true });
-	};
-
-	notLoading = () => {
-		this.setState({ isLoading: false });
+		if(geoJson === null) {
+			alert(msg);
+			this.setState({ displayAll: false, isLoading: false });
+		} else if(geoJson.data && geoJson.data.type === "FeatureCollection") {
+			this.setState({
+				trailPointData: {
+					type: "geojson",
+					data: {
+						type: "FeatureCollection",
+						features: geoJson.data.features
+						}
+				},
+				displayAll: true,
+				isLoading: false
+			})
+		} else {
+			this.setState({ displayAll: false, isLoading: false });
+			console.error("Invalid data fetched by request");
+			alert("Unable to display data");
+		}
 	};
 
 	render() {
