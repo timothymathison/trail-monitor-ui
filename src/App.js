@@ -26,6 +26,7 @@ class App extends Component {
 			isLoading: true,
 			trailPointData: Utility.buildData()
 		};
+		Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
 	}
 
 	//turns all data display on/off
@@ -44,7 +45,7 @@ class App extends Component {
 
 	};
 
-	newDataHandler = (geoJson) => {
+	newDataHandler = (msg, geoJson) => {
 
 	};
 

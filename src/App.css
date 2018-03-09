@@ -88,15 +88,19 @@
     top: 48%;
     left: 45%;
     color: #2a57ab;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
     text-align: center;
-    max-width: 200px;
+    font-weight: bold;
+    font-size: 1.5em;
 }
 
 .flexDefault {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-around;
-    align-items: center;
+    align-items: flex-start;
     align-content: flex-start;
 }
 

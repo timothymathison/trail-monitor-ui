@@ -1,31 +1,41 @@
 
-const awsApiUrl = "";
+const awsApiUrl = "https://s71x34ids1.execute-api.us-east-2.amazonaws.com/TrailMonitor_Beta/trail-data?";
 
 class Utility {
 
 	//TODO: Request data from API
-	static requestData = (top, left, right, bottom, startime) => {
-		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&startime=" + startime;
+	static requestData = (top, left, right, bottom, startime, dataCallback) => {
+		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startime;
+
 		let apiRequest = new XMLHttpRequest();
 
 		apiRequest.open("GET", url, true);
 		apiRequest.onreadystatechange = function () {
-			if(apiRequest.readyState === 4 && apiRequest.status === 200) {
-				try {
-					console.log(JSON.parse(apiRequest.responseText));
-				} catch (e) {
-					console.error("Could not parse response text")
-				}
+			if(apiRequest.readyState === 4) {
+				if(apiRequest.status === 200) {
+					try {
+						let data = JSON.parse(apiRequest.responseText);
+						console.log(data);
+						dataCallback("Data Fetched", data)
+					} catch (e) {
+						console.error("Could not parse response text");
+						dataCallback("Error fetching new data", null);
+					}
 
-			} else if(apiRequest.readyState === 4 && apiRequest.status === 400){
-				try {
-					console.error("Server responded with bad request - message: " + JSON.parse(apiRequest.responseText).message);
-				} catch (e) {
-					console.error("Server responded with bad request");
-					console.error("Could not parse response text")
+				} else if(apiRequest.status === 400){
+					try {
+						let message = JSON.parse(apiRequest.responseText).message;
+						console.error("Server responded with bad request - message: " + message);
+						dataCallback("Error fetching new data", null);
+					} catch (e) {
+						console.error("Server responded with bad request");
+						console.error("Could not parse response text");
+						dataCallback("Error fetching new data", null);
+					}
+				} else {
+					console.error("Server Error when requesting new data");
+					dataCallback("Error fetching new data", null);
 				}
-			} else {
-				console.error("Server Error when requesting new data");
 			}
 		};
 

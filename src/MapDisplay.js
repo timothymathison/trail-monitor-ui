@@ -19,6 +19,7 @@ class MapDisplay extends Component {
 	defaultZoom = [9];
 	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
+	map; //not used yet
 
 	constructor(props) {
 		super(props);
@@ -29,7 +30,9 @@ class MapDisplay extends Component {
 			dataVisible: props.dataVisible,
 			topoMap: props.topoMap
 		};
+		this.map = null;//use this?
 		console.log(this.state.geoJsonData);
+		console.log(Map);
 	}
 
 	componentWillReceiveProps(newProps) {
@@ -47,7 +50,8 @@ class MapDisplay extends Component {
 
 	//handle and react to map events
 	handleMapEvents = (map, event) => {
-		if(event.type === "dragend") {
+		if(event.type === "dragend" || event.type === "render") {
+			console.log("handling map event");
 			let bounds = map.getBounds;
 			// console.log(map.getBounds());
 			let top = map.getBounds()._ne.lat;
@@ -57,7 +61,7 @@ class MapDisplay extends Component {
 			let center = [(left + right) / 2, (top + bottom) / 2];
 			// console.log(center);
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			this.props.updateMapHandler(top, bottom, left, right); //check if map data needs to be updated
+			this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
 		}
 
 	};
@@ -172,7 +176,8 @@ class MapDisplay extends Component {
 					containerStyle = {{ height: "100%", width: "100%" }}
 					center = {this.state.center}
 					zoom = {this.defaultZoom}
-					onDragEnd = {this.handleMapEvents}>
+					onDragEnd = {this.handleMapEvents}
+					onRender = {this.handleMapEvents}>
 					<ZoomControl/>
 					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>
 					{this.plotPoints()}
