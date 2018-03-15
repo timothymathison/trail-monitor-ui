@@ -14,7 +14,7 @@ class ControlPanel extends Component {
 				               innerLabels={["R", "D"]} colors={["#e84c3d", "#2a57ab"]}/>
 				{/*TODO: Add map legend*/}
 				{/*TODO: Add time selector*/}
-				{/*TODO: Add datatype selector*/}
+				{/*TODO: Add force refresh button*/}
 			</div>
 		);
 	}

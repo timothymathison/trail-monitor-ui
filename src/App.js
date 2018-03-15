@@ -9,6 +9,13 @@ import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js';
 import LoadIcon from './LoadIcon'
 
+const millisecTimes = {
+	day: 86400000, //24 hours
+	week: 604800000, //7 days
+	month: 2592000000, //30 days
+	year: 31536000000 //365 days
+};
+
 const emptyTrailPoints = {
 	type: "geojson",
 	data: {
@@ -27,14 +34,14 @@ class App extends Component {
 		pastMonth: {},
 		pastYear: {},
 		allTime: {}
-	}; //TODO: dynamicaly manage data and when it needs to be fetched
+	};
 
 	constructor(props) {
 		super(props);
 		this.state = {
 			displayAll: false,
 			topoMap: false,
-			isLoading: true,
+			isLoading: false,
 			timespan: "allTime",
 			trailPointData: emptyTrailPoints
 		};
@@ -52,10 +59,12 @@ class App extends Component {
 		this.setState({ topoMap: newValue });
 	};
 
+	//TODO: custom alert box
+
 	//set params for the data that needs to be displayed on map
-	updateMapHandler = (top, bot, left, right) => {
-		//TODO: find time
+	updateMapHandler = (top, bot, left, right, zoom) => {
 		this.updateMapParams = {
+			zoom: zoom,
 			top: top,
 			bot: bot,
 			left: left,
@@ -63,19 +72,23 @@ class App extends Component {
 		};
 		if(!this.state.isLoading) {
 			this.updateMapData();
-		} else if(!this.updateQueued){ //if already loading, wait before updating again
-			setTimeout(this.updateMapData, 500);
+		} else if(!this.updateQueued){ //if already loading, queue update function to wait before updating again
+			setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
 			this.updateQueued = true;
 		}
-
 	};
 
 	//check if data is present for all of current view window; if not, request new data from cloud service
 	updateMapData = () => {
-		if(this.state.isLoading) {
+		if(this.state.isLoading) { //if already loading, keep waiting before updating again
 			setTimeout(this.updateMapData, 500)
 		} else {
+			this.updateQueued = false;
 			this.setState({ isLoading: true });
+			//TODO: calculate start-time
+			//TODO: check if data is already on map
+			//TODO: check if data is in cache
+			//TODO: fetch data if not in cache and zoom is 4 or greater
 			Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
 				this.updateMapParams.bot, 0, this.newDataHandler);
 		}

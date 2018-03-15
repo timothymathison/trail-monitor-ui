@@ -57,7 +57,7 @@ class MapDisplay extends Component {
 			let center = [(left + right) / 2, (top + bottom) / 2];
 
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			// this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
+			// this.props.updateHandler(top, bottom, left, right, map.getZoom()); //check if map data needs to be updated
 
 			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
 			console.log("zoom: " + map.getZoom());
@@ -67,7 +67,7 @@ class MapDisplay extends Component {
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
 			console.log("handling map event");
-			this.props.updateHandler(top, bottom, left, right);
+			this.props.updateHandler(top, bottom, left, right, map.getZoom());
 		}
 		if(this.map !== map) {
 			this.map = map; //update copy of pointer to map
