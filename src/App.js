@@ -18,6 +18,9 @@ const emptyTrailPoints = {
 };
 
 class App extends Component {
+	updateQueued = false;
+	updateMapParams = {};
+
 	cache = {
 		pastDay: {},
 		pastWeek: {},
@@ -32,6 +35,7 @@ class App extends Component {
 			displayAll: false,
 			topoMap: false,
 			isLoading: true,
+			timespan: "allTime",
 			trailPointData: emptyTrailPoints
 		};
 		// Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
@@ -48,10 +52,33 @@ class App extends Component {
 		this.setState({ topoMap: newValue });
 	};
 
-	//check if data is present for all of current view window; if not, request new data from cloud service
+	//set params for the data that needs to be displayed on map
 	updateMapHandler = (top, bot, left, right) => {
-		this.setState({ isLoading: true });
-		Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
+		//TODO: find time
+		this.updateMapParams = {
+			top: top,
+			bot: bot,
+			left: left,
+			right: right
+		};
+		if(!this.state.isLoading) {
+			this.updateMapData();
+		} else if(!this.updateQueued){ //if already loading, wait before updating again
+			setTimeout(this.updateMapData, 500);
+			this.updateQueued = true;
+		}
+
+	};
+
+	//check if data is present for all of current view window; if not, request new data from cloud service
+	updateMapData = () => {
+		if(this.state.isLoading) {
+			setTimeout(this.updateMapData, 500)
+		} else {
+			this.setState({ isLoading: true });
+			Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
+				this.updateMapParams.bot, 0, this.newDataHandler);
+		}
 	};
 
 	newDataHandler = (msg, geoJson) => {
