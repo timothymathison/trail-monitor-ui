@@ -38,13 +38,30 @@ class ControlToggle extends Component {
 		)
 	};
 
+	renderSelect = () => {
+		return (
+			<ToggleButton
+				activeLabel={<div className="veryBold">{this.props.innerLabels[0]}</div>}
+				inactiveLabel={<div className="veryBold">{this.props.innerLabels[1]}</div>}
+				value={ this.state.value }
+				onToggle={ this.handler }
+				colors={{
+					active: {
+						base: this.props.colors[0]
+					},
+					inactive: {
+						base: this.props.colors[1]
+					}
+				}}
+			/>
+		);
+	};
+
 	render() {
-		console.log("Toggle render called");
 		return(
 			<div id="toggle" className="flexDefault">
 				<h4>{this.props.label}</h4>
-				{this.renderOnOff()}
-				{/*TODO: options to render different types of toggle controls*/}
+				{this.props.type !== "select" ? this.renderOnOff() : this.renderSelect()}
 			</div>
 		);
 	}

@@ -9,34 +9,70 @@ const distanceUnits = "mi"; //distance units used for scale ruler
 const dataColorPalette = ["#2dc937", "#99c140", "#e7b416", "#db7b2b", "#cc3232"]; //range of colors for data visualization
 //const dataColorPallette = ["rgba(33,102,172,0)", "rgb(103,169,207)", "rgb(209,229,240)", "rgb(253,219,199)", "rgb(239,138,98)", "rgb(178,24,43)"];
 
+
+const mapStyleDark = "mapbox://styles/mapbox/dark-v9";
+const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
+
 class MapDisplay extends Component {
 	defaultZoom = [9];
-	transitionZoom = 12; //zoom at which heatmap transitions to points
+	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
+	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 
 	constructor(props) {
 		super(props);
 		this.state = {
+			center: [-92.958210, 45.363131], //default
 			geoJsonData: props.trailPointData,
 			dataType: props.dataType,
-			dataVisible: props.dataVisible
+			dataVisible: props.dataVisible,
+			topoMap: props.topoMap
 		};
-		console.log(this.state.geoJsonData);
+		this.map = null; //null to start until its loaded
 	}
 
 	componentWillReceiveProps(newProps) {
 		this.setState({
 			geoJsonData: newProps.trailPointData,
 			dataType: newProps.dataType,
-			dataVisible: newProps.dataVisible
+			dataVisible: newProps.dataVisible,
+			topoMap: newProps.topoMap
 		});
 	}
 
 	shouldComponentUpdate(newProps) {
-		return newProps.dataVisible !== this.state.dataVisible;
+		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap;
 	}
 
+	//handle and react to map events
+	handleMapEvents = (map, event) => {
+		if(event.type === "dragend") {
+			console.log("handling map event");
+			let top = map.getBounds()._ne.lat;
+			let bottom = map.getBounds()._sw.lat;
+			let left = map.getBounds()._sw.lng;
+			let right = map.getBounds()._ne.lng;
+			let center = [(left + right) / 2, (top + bottom) / 2];
+
+			this.setState({ center: center }); //update center so later re-renders don't re-position map
+			// this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
+		} else if(event.type === "render" && this.map === null) { // first ever render triggers data request
+			let top = map.getBounds()._ne.lat;
+			let bottom = map.getBounds()._sw.lat;
+			let left = map.getBounds()._sw.lng;
+			let right = map.getBounds()._ne.lng;
+			console.log("handling map event");
+			this.props.updateHandler(top, bottom, left, right);
+		}
+		if(this.map !== map) {
+			this.map = map; //update copy of pointer to map
+		}
+
+	};
+
+	//plots data as colored dots
 	plotPoints = () => {
+		console.log("Map rendered");
 		return (
 			<React.Fragment>
 				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
@@ -73,6 +109,7 @@ class MapDisplay extends Component {
 		);
 	};
 
+	//plots data as a generic heatmap (NOT lines)
 	plotHeatMap = () => {
 		return (
 			<React.Fragment>
@@ -117,7 +154,7 @@ class MapDisplay extends Component {
 							"interpolate",
 							["linear"],
 							["zoom"],
-							0, 2,
+							0, 1,
 							this.transitionZoom, 8
 						],
 						// Transition from heatmap to circle layer by zoom level
@@ -139,10 +176,12 @@ class MapDisplay extends Component {
 		return(
 			<div id="map-container">
 				<Map
-					style = {"mapbox://styles/mapbox/outdoors-v10"}
+					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
-					center = {[-92.958210, 45.363131]}
-					zoom = {this.defaultZoom}>
+					center = {this.state.center}
+					zoom = {this.defaultZoom}
+					onDragEnd = {this.handleMapEvents}
+					onRender = {this.handleMapEvents}>
 					<ZoomControl/>
 					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>
 					{this.plotPoints()}
