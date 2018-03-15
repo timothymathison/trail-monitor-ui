@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
+import Utility from './Utility.js';
 
 const Map = ReactMapboxGl({
 	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
@@ -14,6 +15,7 @@ const mapStyleDark = "mapbox://styles/mapbox/dark-v9";
 const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
 
 class MapDisplay extends Component {
+	minZoom = 3;
 	defaultZoom = [9];
 	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
@@ -46,7 +48,7 @@ class MapDisplay extends Component {
 
 	//handle and react to map events
 	handleMapEvents = (map, event) => {
-		if(event.type === "dragend") {
+		if(event.type === "dragend" || event.type === "zoomend") {
 			console.log("handling map event");
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
@@ -56,6 +58,9 @@ class MapDisplay extends Component {
 
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
 			// this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
+
+			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
+			console.log("zoom: " + map.getZoom());
 		} else if(event.type === "render" && this.map === null) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
@@ -181,6 +186,7 @@ class MapDisplay extends Component {
 					center = {this.state.center}
 					zoom = {this.defaultZoom}
 					onDragEnd = {this.handleMapEvents}
+					onZoomEnd = {this.handleMapEvents}
 					onRender = {this.handleMapEvents}>
 					<ZoomControl/>
 					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>

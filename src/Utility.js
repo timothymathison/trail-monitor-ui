@@ -54,7 +54,7 @@ class Utility {
 
 		for(let lat = top; lat >= bot; lat--) {
 			for(let lng = left; lng <= right; lng++) {
-				tileCoords.push(this.redCoordDim(lng, lat)); //add single dimension tile coordinates to list
+				tileCoords.push(Utility.redCoordDim(lng, lat)); //add single dimension tile coordinates to list
 			}
 		}
 
