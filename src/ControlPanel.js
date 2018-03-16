@@ -10,6 +10,7 @@ class ControlPanel extends Component {
 				<ControlToggle label="Map Type" type="select" value={this.props.topoMap} handler={this.props.mapTypeHandler}
 				               innerLabels={["Topo", "Dark"]} colors={["#2dcc70", "#414244"]}/>
 				<ControlToggle label="Display Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
+				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
 				<ControlToggle label="Roughness/Density" type="select" value={true} handler={ () => {} }
 				               innerLabels={["R", "D"]} colors={["#e84c3d", "#2a57ab"]}/>
 				{/*TODO: Add map legend*/}

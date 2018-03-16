@@ -4,8 +4,8 @@ const awsApiUrl = "https://s71x34ids1.execute-api.us-east-2.amazonaws.com/TrailM
 class Utility {
 
 	//request data from API - AWS cloud data service
-	static requestData = (top, left, right, bottom, startime, dataCallback) => {
-		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startime;
+	static requestData = (top, left, right, bottom, startTime, dataCallback, timespan) => {
+		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
 
 		let apiRequest = new XMLHttpRequest();
 		console.log("in request data");
@@ -20,9 +20,9 @@ class Utility {
 						console.error("Could not parse response text");
 					}
 					if(data === null) {
-						dataCallback("Error fetching new data", data);
+						dataCallback("Error fetching new data", data, timespan);
 					} else {
-						dataCallback("Data Fetched", data)
+						dataCallback("Data Fetched", data, timespan)
 					}
 				} else if(apiRequest.status === 400){
 					try {
@@ -32,16 +32,38 @@ class Utility {
 						console.error("Server responded with bad request");
 						console.error("Could not parse response text");
 					}
-					dataCallback("Error fetching new data", null);
+					dataCallback("Error fetching new data", null, timespan);
 				} else {
 					console.error("Server Error when requesting new data");
-					dataCallback("Error fetching new data", null);
+					dataCallback("Error fetching new data", null, timespan);
 				}
 			}
 		};
 		apiRequest.open("GET", url, true);
 
 		apiRequest.send();
+	};
+
+	//checks cache for all data corresponding to lookForTiles
+	static checkCache = (cache, lookForTiles) => {
+		let tilesNeeded = [];
+		let features = [];
+		//check if tiles are in cache and if they are already displayed on map
+		for(let i = 0; i < lookForTiles.length; i++) {
+			let tileId = lookForTiles[i];
+			let tile = cache[tileId.toString()];
+			if(tile === undefined) { //not found, need to request from backend data service
+				tilesNeeded.push(tileId);
+			} else if(!tile.onMap) { //found, but is not displayed on map
+				features.push.apply(features, tile.features); //features to be added to map
+				tile.onMap = true; //TODO: this should probably be done in App
+			}
+		}
+
+		return {
+			tilesNeeded: tilesNeeded,
+			features: features
+		};
 	};
 
 	//Reduce-Coordinate-Dimension - Generates a unique linear value (tile identifier/coordinate) for each integer latitude/longitude combination

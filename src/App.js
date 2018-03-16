@@ -24,17 +24,30 @@ const emptyTrailPoints = {
 	}
 };
 
+const emptyCache = {
+	pastDay: {
+		tileIds: []
+	},
+	pastWeek: {
+		tileIds: []
+	},
+	pastMonth: {
+		tileIds: []
+	},
+	pastYear: {
+		tileIds: []
+	},
+	allTime: {
+		tileIds: []
+	}
+};
+
 class App extends Component {
 	updateQueued = false;
 	updateMapParams = {};
+	tileIdOfLoading = [];
 
-	cache = {
-		pastDay: {},
-		pastWeek: {},
-		pastMonth: {},
-		pastYear: {},
-		allTime: {}
-	};
+	cache = emptyCache;
 
 	constructor(props) {
 		super(props);
@@ -43,6 +56,7 @@ class App extends Component {
 			topoMap: false,
 			isLoading: false,
 			timespan: "allTime",
+			cacheData: true,
 			trailPointData: emptyTrailPoints
 		};
 		// Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
@@ -52,6 +66,15 @@ class App extends Component {
 	displayAllHandler = (newValue) => {
 		this.setState({ displayAll: newValue });
 		console.log("Display data value: " + newValue);
+	};
+
+	cacheDataHandler = (newValue) => {
+		if(newValue) {
+			this.updateCache(this.state.timespan, this.state.trailPointData.data.features)
+		} else {
+			this.cache = emptyCache;
+		}
+		this.setState({ cacheData: newValue });
 	};
 
 	//toggles the style of map - topographic or dark
@@ -82,32 +105,123 @@ class App extends Component {
 	updateMapData = () => {
 		if(this.state.isLoading) { //if already loading, keep waiting before updating again
 			setTimeout(this.updateMapData, 500)
-		} else {
+		} else if(this.updateMapParams.zoom >= 4) { //update map if zoom is great enough to limit number of tiles
 			this.updateQueued = false;
 			this.setState({ isLoading: true });
-			//TODO: calculate start-time
-			//TODO: check if data is already on map
-			//TODO: check if data is in cache
-			//TODO: fetch data if not in cache and zoom is 4 or greater
-			Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-				this.updateMapParams.bot, 0, this.newDataHandler);
+			//tiles that are currently within map window view
+			let tiles = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
+				this.updateMapParams.right);
+			let startTime = 0;
+			let now = new Date().getMilliseconds();
+			//calculate startTime
+			switch (this.state.timespan) {
+				case "pastDay":
+					startTime = now - millisecTimes.day;
+					break;
+				case "pastWeek":
+					startTime = now - millisecTimes.week;
+					break;
+				case "pastMonth":
+					startTime =  now - millisecTimes.month;
+					break;
+				case "pastYear":
+					startTime = now - millisecTimes.year;
+					break;
+				case "allTime":
+					break;
+				default:
+					console.error("In data for valid time span is being requested! Map failed to update!");
+					this.setState({ isLoading: false });
+					return;
+			}
+			//check if data is already on map or in cache
+			let cacheResult = Utility.checkCache(this.cache[this.state.timespan], tiles);
+
+			//fetch data if not in cache
+			if(cacheResult.tilesNeeded.length > 0) {
+				this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
+				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
+					this.updateMapParams.bot, startTime, this.newDataHandler, this.state.timespan);
+			} else {
+				this.setState({ isLoading: false })
+			}
+
+			//add features to map that were in cache
+			if(cacheResult.features.length > 0) {
+				this.newDataHandler(null, {
+						type: "geojson",
+						data: {
+							type: "FeatureCollection",
+							features: cacheResult.features
+						}
+					}, this.state.timespan, false);
+			}
+		} else {
+			this.updateQueued = false;
+			//TODO: alert user that they need to zoom in further before more data will be placed on map
 		}
 	};
 
-	newDataHandler = (msg, geoJson) => {
+	updateCache = (timespan, features) => {
+		let tiles = {};
+		let tileIds = [];
+		//for each feature determine what tile it belongs to
+		let prevTileId = "0";
+		for(let i = 0; i < features.length; i++) {
+			let feature = features[i];
+			let tileId = Utility.redCoordDim(feature.geometry.coordinates[0], feature.geometry.coordinates[1]).toString();
+			if(prevTileId !== tileId || i === 0) { //feature is for new tile
+				//new cache tile
+				tiles[tileId] = {
+					onMap: true,
+					features: [feature]
+				};
+				tileIds.push(tileId);
+				prevTileId = tileId;
+			} else {
+				tiles[tileId].features.push(feature); //add feature to tile in list
+			}
+		}
+		let cache = this.cache[timespan];
+		//for each tile if it's not in cache or present on map, add to cache
+		for(let i = 0; i < tileIds.length; i++) {
+			let tileId = tileIds[i];
+			let tile = tiles[tileId];
+			let cacheTile = cache[tileId]; //check for tile in cache
+			if(!cacheTile) {
+				cache[tileId] = tile; //add tile to cache
+				cache.tileIds.push(tileId);
+			} else if(!cacheTile.onMap || cacheTile.features.length < tile.features.length) {
+				cache[tileId] = tile; //update tile in cache
+			}
+		}
+		console.log("Cache for " + timespan + " updated:", this.cache);
+
+		//up to-date features to display
+		let displayFeatures = [];
+		for(let i = 0; i < cache.tileIds.length; i++) {
+			displayFeatures.push.apply(displayFeatures, cache[tileIds[i]].features); //add features to map
+		}
+		return displayFeatures;
+	};
+
+	newDataHandler = (msg, geoJson, timespan, replace = true) => {
 		if(geoJson === null) {
 			alert(msg);
 			this.setState({ displayAll: false, isLoading: false });
 		} else if(geoJson.data && geoJson.data.type === "FeatureCollection") {
+			let features = !this.state.cacheData ? geoJson.data.features : (replace //if replace update cache, otherwise place old + new
+				? this.updateCache(timespan, geoJson.data.features)
+				: this.state.trailPointData.data.features.concat(geoJson.data.features));
 			this.setState({
 				trailPointData: {
 					type: "geojson",
 					data: {
 						type: "FeatureCollection",
-						features: geoJson.data.features
+						features: features
 						}
 				},
-				displayAll: true,
+				displayAll: features.length > 0,
 				isLoading: false
 			})
 		} else {
@@ -129,6 +243,7 @@ class App extends Component {
 	            <div id="App-body">
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
+		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
 		            />
 		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
