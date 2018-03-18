@@ -20,7 +20,7 @@ class LoadIcon extends Component {
 	render() {
 		return (
 			<div className="loading">
-				<HashLoader color="#2a57ab" size={100} loading={this.state.loading}/>
+				<RingLoader color="#2a57ab" size={100} loading={this.state.loading}/>
 				{/*<br/>*/}
 				{/*Building Visual...*/}
 			</div>

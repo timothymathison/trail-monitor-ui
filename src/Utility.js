@@ -51,7 +51,7 @@ class Utility {
 		//check if tiles are in cache and if they are already displayed on map
 		for(let i = 0; i < lookForTiles.length; i++) {
 			let tileId = lookForTiles[i];
-			let tile = cache[tileId.toString()];
+			let tile = cache[tileId];
 			if(tile === undefined) { //not found, need to request from backend data service
 				tilesNeeded.push(tileId);
 			} else if(!tile.onMap) { //found, but is not displayed on map
@@ -76,7 +76,7 @@ class Utility {
 
 		for(let lat = top; lat >= bot; lat--) {
 			for(let lng = left; lng <= right; lng++) {
-				tileCoords.push(Utility.redCoordDim(lng, lat)); //add single dimension tile coordinates to list
+				tileCoords.push(Utility.redCoordDim(lng, lat).toString()); //add single dimension tile coordinates to list
 			}
 		}
 

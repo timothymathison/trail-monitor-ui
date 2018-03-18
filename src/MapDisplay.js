@@ -15,7 +15,6 @@ const mapStyleDark = "mapbox://styles/mapbox/dark-v9";
 const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
 
 class MapDisplay extends Component {
-	minZoom = 3;
 	defaultZoom = [9];
 	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value

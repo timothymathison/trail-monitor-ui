@@ -64,6 +64,8 @@ class App extends Component {
 
 	//turns all data display on/off
 	displayAllHandler = (newValue) => {
+		//TODO: check if any data present before displaying
+		//TODO: check if map needs to be updated
 		this.setState({ displayAll: newValue });
 		console.log("Display data value: " + newValue);
 	};
@@ -108,9 +110,7 @@ class App extends Component {
 		} else if(this.updateMapParams.zoom >= 4) { //update map if zoom is great enough to limit number of tiles
 			this.updateQueued = false;
 			this.setState({ isLoading: true });
-			//tiles that are currently within map window view
-			let tiles = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
-				this.updateMapParams.right);
+
 			let startTime = 0;
 			let now = new Date().getMilliseconds();
 			//calculate startTime
@@ -134,27 +134,34 @@ class App extends Component {
 					this.setState({ isLoading: false });
 					return;
 			}
-			//check if data is already on map or in cache
-			let cacheResult = Utility.checkCache(this.cache[this.state.timespan], tiles);
 
-			//fetch data if not in cache
-			if(cacheResult.tilesNeeded.length > 0) {
-				this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
-				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-					this.updateMapParams.bot, startTime, this.newDataHandler, this.state.timespan);
-			} else {
-				this.setState({ isLoading: false })
-			}
-
-			//add features to map that were in cache
-			if(cacheResult.features.length > 0) {
-				this.newDataHandler(null, {
+			if(this.state.cacheData) {
+				//tiles that are currently within map window view
+				let tiles = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
+					this.updateMapParams.right);
+				//check if data is already on map or in cache
+				let cacheResult = Utility.checkCache(this.cache[this.state.timespan], tiles);
+				//fetch data if not in cache
+				if(cacheResult.tilesNeeded.length > 0) {
+					this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
+					Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
+						this.updateMapParams.bot, startTime, this.newDataHandler, this.state.timespan);
+				} else {
+					this.setState({ isLoading: false })
+				}
+				//add features to map that were in cache
+				if(cacheResult.features.length > 0) {
+					this.newDataHandler(null, {
 						type: "geojson",
 						data: {
 							type: "FeatureCollection",
 							features: cacheResult.features
 						}
 					}, this.state.timespan, false);
+				}
+			} else { //data not cached, always request from data service
+				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
+					this.updateMapParams.bot, startTime, this.newDataHandler, this.state.timespan);
 			}
 		} else {
 			this.updateQueued = false;
@@ -162,6 +169,8 @@ class App extends Component {
 		}
 	};
 
+	//update tiles in cache with data (features) returned from server, and return all features to be displayed
+	//TODO: look for ways to combine loops
 	updateCache = (timespan, features) => {
 		let tiles = {};
 		let tileIds = [];
@@ -191,16 +200,27 @@ class App extends Component {
 			if(!cacheTile) {
 				cache[tileId] = tile; //add tile to cache
 				cache.tileIds.push(tileId);
-			} else if(!cacheTile.onMap || cacheTile.features.length < tile.features.length) {
+			} else if(!cacheTile.onMap || cacheTile.features.length !== tile.features.length) {
 				cache[tileId] = tile; //update tile in cache
 			}
 		}
-		console.log("Cache for " + timespan + " updated:", this.cache);
+		//loop through loading tiles Ids and add empty tiles to cache
+		for(let i = 0; i < this.tileIdOfLoading.length; i++) {
+			let tileId = this.tileIdOfLoading[i];
+			if(cache[tileId] === undefined) {
+				cache[tileId] = {
+					onMap: true,
+					features: []
+				}
+			}
+		}
+		this.tileIdOfLoading = [];
+		console.log("Cache for " + timespan + " updated:", cache);
 
 		//up to-date features to display
 		let displayFeatures = [];
 		for(let i = 0; i < cache.tileIds.length; i++) {
-			displayFeatures.push.apply(displayFeatures, cache[tileIds[i]].features); //add features to map
+			displayFeatures.push.apply(displayFeatures, cache[cache.tileIds[i]].features); //add features to map
 		}
 		return displayFeatures;
 	};

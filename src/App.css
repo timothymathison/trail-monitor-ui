@@ -78,7 +78,7 @@
 }
 
 #toggle {
-    margin: 10px;
+    margin: 10px auto;
     min-width: 200px;
 }
 
@@ -102,7 +102,7 @@
 .flexDefault {
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: flex-start;
     align-content: flex-start;
 }
