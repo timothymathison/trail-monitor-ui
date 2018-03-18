@@ -59,7 +59,6 @@ class App extends Component {
 			cacheData: true,
 			trailPointData: emptyTrailPoints
 		};
-		// Utility.requestData(46, -93, -91, 45, 0, this.newDataHandler);
 	}
 
 	//turns all data display on/off
@@ -271,6 +270,7 @@ class App extends Component {
 		            />
 	            </div>
 				<LoadIcon isLoading={this.state.isLoading}/>
+	            {/*TODO: fix issue with load icon blocking map scrolling/zooming*/}
             </div>
 		);
 	}

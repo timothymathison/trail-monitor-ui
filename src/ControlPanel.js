@@ -5,6 +5,7 @@ import ControlToggle from './ControlToggle'
 class ControlPanel extends Component {
 
 	render() {
+		//TODO
 		return(
 			<div id="control-panel" className="flexDefault">
 				<ControlToggle label="Map Type" type="select" value={this.props.topoMap} handler={this.props.mapTypeHandler}
