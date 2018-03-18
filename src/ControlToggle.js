@@ -59,7 +59,7 @@ class ControlToggle extends Component {
 
 	render() {
 		return(
-			<div id="toggle" className="flexDefault">
+			<div className="toggle flexDefault">
 				<h4>{this.props.label}</h4>
 				{this.props.type !== "select" ? this.renderOnOff() : this.renderSelect()}
 			</div>

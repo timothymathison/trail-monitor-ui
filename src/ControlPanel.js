@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 
-import ControlToggle from './ControlToggle'
+import ControlToggle from './ControlToggle';
+import SelectOptions from './SelectOptions';
 
 class ControlPanel extends Component {
 
@@ -17,6 +18,7 @@ class ControlPanel extends Component {
 				{/*TODO: Add map legend*/}
 				{/*TODO: Add time selector*/}
 				{/*TODO: Add force refresh button*/}
+				<SelectOptions default={{value: "allTime", label: "All Time"}}/>
 			</div>
 		);
 	}

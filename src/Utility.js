@@ -8,7 +8,6 @@ class Utility {
 		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
 
 		let apiRequest = new XMLHttpRequest();
-		console.log("in request data");
 		apiRequest.onreadystatechange = function () {
 			if(apiRequest.readyState === 4) {
 				if(apiRequest.status === 200) {

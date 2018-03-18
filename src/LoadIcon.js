@@ -28,4 +28,4 @@ class LoadIcon extends Component {
 	}
 }
 
-export default  LoadIcon
+export default LoadIcon
