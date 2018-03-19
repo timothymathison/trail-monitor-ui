@@ -24,6 +24,16 @@ const emptyTrailPoints = {
 	}
 };
 
+const timeOptions = [
+	{value: "pastDay", label: "Past 24 Hours"},
+	{value: "pastWeek", label: "Past 7 Days"},
+	{value: "pastMonth", label: "Past 30 Days"},
+	{value: "pastYear", label: "Past Year"},
+	{value: "allTime", label: "All Time"}
+];
+const defaultTimeSpan = timeOptions[4].value;
+
+//cache names MUST BE SAME as time option values above
 const emptyCache = {
 	pastDay: {
 		tileIds: []
@@ -46,7 +56,7 @@ class App extends Component {
 	updateQueued = false;
 	updateMapParams = {};
 	tileIdOfLoading = [];
-
+	timeSpan = defaultTimeSpan;
 	cache = emptyCache;
 
 	constructor(props) {
@@ -55,27 +65,41 @@ class App extends Component {
 			displayAll: false,
 			topoMap: false,
 			isLoading: false,
-			timespan: "allTime",
 			cacheData: true,
-			trailPointData: emptyTrailPoints
+			trailPointData: emptyTrailPoints,
+			dataVersion: 0
 		};
 	}
 
 	//turns all data display on/off
 	displayAllHandler = (newValue) => {
-		//TODO: check if any data present before displaying
-		//TODO: check if map needs to be updated
-		this.setState({ displayAll: newValue });
-		console.log("Display data value: " + newValue);
+		if(this.state.trailPointData.data.features.length > 0) {
+			this.setState({ displayAll: newValue });
+		} else {
+			this.setState({ displayAll: false });
+			alert("There is currently no data to display\nPlease change the map or view area")
+		}
 	};
 
 	cacheDataHandler = (newValue) => {
 		if(newValue) {
-			this.updateCache(this.state.timespan, this.state.trailPointData.data.features)
+			this.updateCache(this.timeSpan, this.state.trailPointData.data.features)
 		} else {
 			this.cache = emptyCache;
 		}
 		this.setState({ cacheData: newValue });
+	};
+
+	timeChangeHandler = (newTimeSpan) => {
+		console.log("Time: ", newTimeSpan, "selected");
+		if(this.state.cacheData) { //remove data from map and update status in cache
+			let cache = this.cache[this.timeSpan];
+			for(let i = 0; i < cache.tileIds.length; i++) {
+				cache[cache.tileIds[i]].onMap = false;
+			}
+		}
+		this.timeSpan = newTimeSpan;
+		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData);
 	};
 
 	//toggles the style of map - topographic or dark
@@ -111,9 +135,9 @@ class App extends Component {
 			this.setState({ isLoading: true });
 
 			let startTime = 0;
-			let now = new Date().getMilliseconds();
+			let now = new Date().valueOf();
 			//calculate startTime
-			switch (this.state.timespan) {
+			switch (this.timeSpan) {
 				case "pastDay":
 					startTime = now - millisecTimes.day;
 					break;
@@ -139,12 +163,12 @@ class App extends Component {
 				let tiles = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
 					this.updateMapParams.right);
 				//check if data is already on map or in cache
-				let cacheResult = Utility.checkCache(this.cache[this.state.timespan], tiles);
+				let cacheResult = Utility.checkCache(this.cache[this.timeSpan], tiles);
 				//fetch data if not in cache
 				if(cacheResult.tilesNeeded.length > 0) {
 					this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
 					Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-						this.updateMapParams.bot, startTime, this.newDataHandler, this.state.timespan);
+						this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan);
 				} else {
 					this.setState({ isLoading: false })
 				}
@@ -156,11 +180,11 @@ class App extends Component {
 							type: "FeatureCollection",
 							features: cacheResult.features
 						}
-					}, this.state.timespan, false);
+					}, this.timeSpan, false);
 				}
 			} else { //data not cached, always request from data service
 				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-					this.updateMapParams.bot, startTime, this.newDataHandler, this.state.timespan);
+					this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan);
 			}
 		} else {
 			this.updateQueued = false;
@@ -210,7 +234,8 @@ class App extends Component {
 				cache[tileId] = {
 					onMap: true,
 					features: []
-				}
+				};
+				cache.tileIds.push(tileId);
 			}
 		}
 		this.tileIdOfLoading = [];
@@ -240,6 +265,7 @@ class App extends Component {
 						features: features
 						}
 				},
+				dataVersion: this.state.dataVersion + 1,
 				displayAll: features.length > 0,
 				isLoading: false
 			})
@@ -263,14 +289,14 @@ class App extends Component {
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
+		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
 		            />
 		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
-		                        updateHandler={this.updateMapHandler}
+		                        updateHandler={this.updateMapHandler} dataVersion={this.state.dataVersion}
 		            />
 	            </div>
 				<LoadIcon isLoading={this.state.isLoading}/>
-	            {/*TODO: fix issue with load icon blocking map scrolling/zooming*/}
             </div>
 		);
 	}

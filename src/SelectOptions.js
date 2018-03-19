@@ -11,22 +11,20 @@ class SelectOptions extends Component {
 	}
 
 	handleChange = (selected) => {
-		this.setState({ selected: selected });
-		console.log("Time: ", selected, "selected");
+		if(this.state.selected.value !== selected.value) {
+			this.setState({ selected: selected });
+			this.props.handler(selected.value);
+		}
 	};
 
 	renderSelect = () => {
 		return(
-			<Select name="Time Span"
+			<Select name="Time Span" className="dark"
 			        value={this.state.selected && this.state.selected.value}
 			        onChange={this.handleChange}
-			        options={[
-				        {value: "pastDay", label: "Past 24 Hours"},
-				        {value: "pastWeek", label: "Past 7 Days"},
-				        {value: "pastMonth", label: "Past 30 Days"},
-				        {value: "pastYear", label: "Past Year"},
-				        {value: "allTime", label: "All Time"}
-			        ]}
+			        removeSelected={true}
+			        clearable={false}
+			        options={this.props.options}
 			/>
 		);
 	};

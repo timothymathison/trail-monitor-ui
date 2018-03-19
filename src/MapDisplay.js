@@ -19,22 +19,25 @@ class MapDisplay extends Component {
 	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
+	hasRendered = false;
 
 	constructor(props) {
 		super(props);
 		this.state = {
 			center: [-92.958210, 45.363131], //default
 			geoJsonData: props.trailPointData,
+			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
 			topoMap: props.topoMap
 		};
-		this.map = null; //null to start until its loaded
+		// this.map = null; //null to start until its loaded
 	}
 
 	componentWillReceiveProps(newProps) {
 		this.setState({
 			geoJsonData: newProps.trailPointData,
+			dataVersion: newProps.dataVersion,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
 			topoMap: newProps.topoMap
@@ -42,7 +45,12 @@ class MapDisplay extends Component {
 	}
 
 	shouldComponentUpdate(newProps) {
-		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap;
+		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap
+			|| newProps.dataVersion !== this.state.dataVersion;
+	}
+
+	componentDidUpdate() {
+		console.log("Map updated");
 	}
 
 	//handle and react to map events
@@ -60,12 +68,12 @@ class MapDisplay extends Component {
 
 			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
 			console.log("zoom: " + map.getZoom());
-		} else if(event.type === "render" && this.map === null) { // first ever render triggers data request
+		} else if(event.type === "render" && !this.hasRendered) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
-			console.log("handling map event");
+			this.hasRendered = true;
 			this.props.updateHandler(top, bottom, left, right, map.getZoom());
 		}
 		if(this.map !== map) {

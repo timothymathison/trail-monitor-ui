@@ -99,12 +99,34 @@
     font-size: 1.5em;
 }
 
+.hidden {
+    display: none;
+    z-index: 0;
+}
+
 .flexDefault {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: flex-start;
     align-content: flex-start;
+}
+
+div.Select-control {
+    background-color: #5d5d5d !important;
+    color: #e4e4e4 !important;
+    border-radius: 5px;
+    border-color: #2a57ab !important;
+}
+
+.Select-value-label, div.Select-option, .Select-menu-outer {
+    color: #e4e4e4 !important;
+    background-color: #5d5d5d !important;
+    border-color: #2a57ab !important;
+}
+
+.Select-menu-outer div:hover {
+    background-color: #3c9aff !important;
 }
 
 .veryBold {

@@ -15,10 +15,9 @@ class ControlPanel extends Component {
 				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
 				<ControlToggle label="Roughness/Density" type="select" value={true} handler={ () => {} }
 				               innerLabels={["R", "D"]} colors={["#e84c3d", "#2a57ab"]}/>
+				<SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
 				{/*TODO: Add map legend*/}
-				{/*TODO: Add time selector*/}
 				{/*TODO: Add force refresh button*/}
-				<SelectOptions default={{value: "allTime", label: "All Time"}}/>
 			</div>
 		);
 	}
