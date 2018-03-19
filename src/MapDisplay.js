@@ -20,18 +20,19 @@ class MapDisplay extends Component {
 	valueMax = 10; //max trail point roughness value
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
+	zoom = this.defaultZoom[0];
+	center = {lng: -92.958210, lat: 45.363131}; //default
 
 	constructor(props) {
 		super(props);
 		this.state = {
-			center: [-92.958210, 45.363131], //default
+			center: {lng: -92.958210, lat: 45.363131}, //default
 			geoJsonData: props.trailPointData,
 			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
 			topoMap: props.topoMap
 		};
-		// this.map = null; //null to start until its loaded
 	}
 
 	componentWillReceiveProps(newProps) {
@@ -49,22 +50,21 @@ class MapDisplay extends Component {
 			|| newProps.dataVersion !== this.state.dataVersion;
 	}
 
-	componentDidUpdate() {
-		console.log("Map updated");
-	}
-
 	//handle and react to map events
 	handleMapEvents = (map, event) => {
 		if(event.type === "dragend" || event.type === "zoomend") {
 			console.log("handling map event");
+			let zoom = map.getZoom();
+			let center = map.getCenter();
+
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
-			let center = [(left + right) / 2, (top + bottom) / 2];
 
-			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			this.props.updateHandler(top, bottom, left, right, map.getZoom()); //check if map data needs to be updated
+			this.zoom = zoom;
+			this.center = center; //update center so later re-renders don't re-position map
+			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
 
 			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
 			console.log("zoom: " + map.getZoom());
@@ -79,7 +79,6 @@ class MapDisplay extends Component {
 		if(this.map !== map) {
 			this.map = map; //update copy of pointer to map
 		}
-
 	};
 
 	//plots data as colored dots
@@ -190,7 +189,7 @@ class MapDisplay extends Component {
 				<Map
 					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
-					center = {this.state.center}
+					center = {this.center}
 					zoom = {this.defaultZoom}
 					onDragEnd = {this.handleMapEvents}
 					onZoomEnd = {this.handleMapEvents}

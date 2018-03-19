@@ -39,8 +39,12 @@ class Utility {
 			}
 		};
 		apiRequest.open("GET", url, true);
-
 		apiRequest.send();
+
+		//for testing without making server requests:
+		// setTimeout(function () {
+		// 	dataCallback("Data Fetched", Utility.buildData(), timespan)
+		// }, 1000);
 	};
 
 	//checks cache for all data corresponding to lookForTiles
@@ -83,7 +87,7 @@ class Utility {
 	};
 
 	//builds hard coded data
-	static buildData = (rawData) => {
+	static buildData = () => {
 		return {
 			"type": "geojson",
 			"data": {
