@@ -111,18 +111,21 @@ class App extends Component {
 
 	//set params for the data that needs to be displayed on map
 	updateMapHandler = (top, bot, left, right, zoom) => {
-		this.updateMapParams = {
-			zoom: zoom,
-			top: top,
-			bot: bot,
-			left: left,
-			right: right
-		};
-		if(!this.state.isLoading) {
-			this.updateMapData();
-		} else if(!this.updateQueued){ //if already loading, queue update function to wait before updating again
-			setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
-			this.updateQueued = true;
+		if(this.updateMapParams.zoom !== zoom || this.updateMapParams.top !== top || this.updateMapParams.bot !== bot
+			|| this.updateMapParams.left !== left || this.updateMapParams.right !== right) {
+			this.updateMapParams = {
+				zoom: zoom,
+				top: top,
+				bot: bot,
+				left: left,
+				right: right
+			};
+			if(!this.state.isLoading) {
+				this.updateMapData();
+			} else if(!this.updateQueued){ //if already loading, queue update function to wait before updating again
+				setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
+				this.updateQueued = true;
+			}
 		}
 	};
 
