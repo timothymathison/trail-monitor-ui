@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
+import Utility from './Utility.js';
 
 const Map = ReactMapboxGl({
 	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
@@ -18,22 +19,25 @@ class MapDisplay extends Component {
 	transitionZoom = 13; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
+	hasRendered = false;
 
 	constructor(props) {
 		super(props);
 		this.state = {
 			center: [-92.958210, 45.363131], //default
 			geoJsonData: props.trailPointData,
+			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
 			topoMap: props.topoMap
 		};
-		this.map = null; //null to start until its loaded
+		// this.map = null; //null to start until its loaded
 	}
 
 	componentWillReceiveProps(newProps) {
 		this.setState({
 			geoJsonData: newProps.trailPointData,
+			dataVersion: newProps.dataVersion,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
 			topoMap: newProps.topoMap
@@ -41,12 +45,17 @@ class MapDisplay extends Component {
 	}
 
 	shouldComponentUpdate(newProps) {
-		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap;
+		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap
+			|| newProps.dataVersion !== this.state.dataVersion;
+	}
+
+	componentDidUpdate() {
+		console.log("Map updated");
 	}
 
 	//handle and react to map events
 	handleMapEvents = (map, event) => {
-		if(event.type === "dragend") {
+		if(event.type === "dragend" || event.type === "zoomend") {
 			console.log("handling map event");
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
@@ -55,14 +64,17 @@ class MapDisplay extends Component {
 			let center = [(left + right) / 2, (top + bottom) / 2];
 
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			// this.props.updateHandler(top, bottom, left, right); //check if map data needs to be updated
-		} else if(event.type === "render" && this.map === null) { // first ever render triggers data request
+			this.props.updateHandler(top, bottom, left, right, map.getZoom()); //check if map data needs to be updated
+
+			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
+			console.log("zoom: " + map.getZoom());
+		} else if(event.type === "render" && !this.hasRendered) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;
 			let bottom = map.getBounds()._sw.lat;
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
-			console.log("handling map event");
-			this.props.updateHandler(top, bottom, left, right);
+			this.hasRendered = true;
+			this.props.updateHandler(top, bottom, left, right, map.getZoom());
 		}
 		if(this.map !== map) {
 			this.map = map; //update copy of pointer to map
@@ -181,6 +193,7 @@ class MapDisplay extends Component {
 					center = {this.state.center}
 					zoom = {this.defaultZoom}
 					onDragEnd = {this.handleMapEvents}
+					onZoomEnd = {this.handleMapEvents}
 					onRender = {this.handleMapEvents}>
 					<ZoomControl/>
 					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>
