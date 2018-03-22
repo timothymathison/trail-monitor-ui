@@ -112,6 +112,9 @@ class App extends Component {
 	//when refresh button is clicked, empty cache and request new data
 	refreshHandler = () => {
 		console.log("Refresh data clicked");
+		this.cache = emptyCache;
+		this.setState({ trailPointData: emptyTrailPoints });
+        this.updateMapData();
 	};
 
 	//TODO: custom alert box
