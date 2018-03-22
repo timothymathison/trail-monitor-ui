@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 
 import ControlToggle from './ControlToggle';
 import SelectOptions from './SelectOptions';
+import Button from './Button';
 
 class ControlPanel extends Component {
 
@@ -18,6 +19,7 @@ class ControlPanel extends Component {
 				<SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
 				{/*TODO: Add map legend*/}
 				{/*TODO: Add force refresh button*/}
+				<Button handler={this.props.refreshHandler} text="Refresh"/>
 			</div>
 		);
 	}

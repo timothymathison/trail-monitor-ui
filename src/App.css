@@ -45,7 +45,7 @@
     height: 60px;
     width: 100%;
     padding: 0 10px;
-    color: white;
+    color: #e4e4e4;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
@@ -71,7 +71,7 @@
 }
 
 #map-container {
-    background-color: lightgray;
+    background-color: #e4e4e4;
     width: 80%;
     min-height: 400px;
     flex-grow: 4;
@@ -80,6 +80,19 @@
 .toggle, .select {
     margin: 10px auto;
     min-width: 200px;
+}
+
+.button {
+    margin: 10px auto;
+    width: 150px;
+    height: 30px;
+    background-color: #2a57ab;
+    color: #e4e4e4;
+    font-size: 1em;
+    border-radius: 15px;
+    border: solid black 1px;
+    text-align: center;
+    cursor: pointer;
 }
 
 .loading {

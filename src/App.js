@@ -71,6 +71,11 @@ class App extends Component {
 		};
 	}
 
+    //toggles the style of map - topographic or dark
+    mapTypeHandler = (newValue) => {
+        this.setState({ topoMap: newValue });
+    };
+
 	//turns all data display on/off
 	displayAllHandler = (newValue) => {
 		if(this.state.trailPointData.data.features.length > 0) {
@@ -81,30 +86,32 @@ class App extends Component {
 		}
 	};
 
+	//toggles whether data is cached
 	cacheDataHandler = (newValue) => {
-		if(newValue) {
+		if(newValue) { //if data should be cached, add current map data to cache
 			this.updateCache(this.timeSpan, this.state.trailPointData.data.features)
 		} else {
-			this.cache = emptyCache;
+			this.cache = emptyCache; //empty the cache
 		}
 		this.setState({ cacheData: newValue });
 	};
 
+	//changes the time-span for which data is displayed on map
 	timeChangeHandler = (newTimeSpan) => {
 		console.log("Time: ", newTimeSpan, "selected");
-		if(this.state.cacheData) { //remove data from map and update status in cache
+		if(this.state.cacheData) { //remove old timespan data from map and update status in cache
 			let cache = this.cache[this.timeSpan];
 			for(let i = 0; i < cache.tileIds.length; i++) {
 				cache[cache.tileIds[i]].onMap = false;
 			}
 		}
 		this.timeSpan = newTimeSpan;
-		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData);
+		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData); //set empty map data and update for new time
 	};
 
-	//toggles the style of map - topographic or dark
-	mapTypeHandler = (newValue) => {
-		this.setState({ topoMap: newValue });
+	//when refresh button is clicked, empty cache and request new data
+	refreshHandler = () => {
+		console.log("Refresh data clicked");
 	};
 
 	//TODO: custom alert box
@@ -293,6 +300,7 @@ class App extends Component {
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
+                                  refreshHandler={this.refreshHandler}
 		            />
 		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
