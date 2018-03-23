@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import ControlToggle from './ControlToggle';
 import SelectOptions from './SelectOptions';
 import Button from './Button';
+import AlertBox from './AlertBox';
 
 class ControlPanel extends Component {
 
@@ -20,6 +21,7 @@ class ControlPanel extends Component {
 				{/*TODO: Add map legend*/}
 				{/*TODO: Add force refresh button*/}
 				<Button handler={this.props.refreshHandler} text="Refresh"/>
+				<AlertBox alertId={this.props.alert.id} type={this.props.alert.type} message={this.props.alert.message} timeout={this.props.alert.timeout}/>
 			</div>
 		);
 	}
