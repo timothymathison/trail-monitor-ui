@@ -4,7 +4,7 @@ const awsApiUrl = "https://s71x34ids1.execute-api.us-east-2.amazonaws.com/TrailM
 class Utility {
 
 	//request data from API - AWS cloud data service
-	static requestData = (top, left, right, bottom, startTime, dataCallback, timespan) => {
+	static requestData = (top, left, right, bottom, startTime, dataHandler, timespan, done) => {
 		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
 
 		let apiRequest = new XMLHttpRequest();
@@ -19,9 +19,9 @@ class Utility {
 						console.error("Could not parse response text");
 					}
 					if(data === null) {
-						dataCallback("Error fetching new data", data, timespan);
+                        dataHandler("Error fetching new data", data, timespan, done);
 					} else {
-						dataCallback("Data Fetched", data, timespan)
+                        dataHandler("Data loaded", data, timespan, done)
 					}
 				} else if(apiRequest.status === 400){
 					try {
@@ -31,10 +31,10 @@ class Utility {
 						console.error("Server responded with bad request");
 						console.error("Could not parse response text");
 					}
-					dataCallback("Error fetching new data", null, timespan);
+                    dataHandler("Error fetching new data", null, timespan, done);
 				} else {
 					console.error("Server Error when requesting new data");
-					dataCallback("Error fetching new data", null, timespan);
+                    dataHandler("Error fetching new data", null, timespan, done);
 				}
 			}
 		};

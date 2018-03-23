@@ -166,7 +166,7 @@ class MapDisplay extends Component {
 							["linear"],
 							["zoom"],
 							0, 1,
-							this.transitionZoom, 8
+							this.transitionZoom, 5
 						],
 						// Transition from heatmap to circle layer by zoom level
 						"heatmap-opacity": [

@@ -34,42 +34,63 @@ const timeOptions = [
 const defaultTimeSpan = timeOptions[4].value;
 
 //cache names MUST BE SAME as time option values above
-const emptyCache = {
-	pastDay: {
-		tileIds: []
-	},
-	pastWeek: {
-		tileIds: []
-	},
-	pastMonth: {
-		tileIds: []
-	},
-	pastYear: {
-		tileIds: []
-	},
-	allTime: {
-		tileIds: []
-	}
+let emptyCache = () => {
+	return {
+        pastDay: {
+            tileIds: []
+        },
+        pastWeek: {
+            tileIds: []
+        },
+        pastMonth: {
+            tileIds: []
+        },
+        pastYear: {
+            tileIds: []
+        },
+        allTime: {
+            tileIds: []
+        }
+    };
+};
+
+const alerts = {
+    success: "success",
+    warn: "warning",
+    error: "error"
 };
 
 class App extends Component {
-	updateQueued = false;
-	updateMapParams = {};
-	tileIdOfLoading = [];
-	timeSpan = defaultTimeSpan;
-	cache = emptyCache;
+	updateQueued = false; //used for time sensitive logic
+	isLoading = false; //used for time sensitive logic
+	updateMapParams = {}; //holds most recent position and zoom of map window
+	tileIdOfLoading = []; //tile id's that are still being fetched from server
+	timeSpan = defaultTimeSpan; //currently selected view timespan
+	cache = emptyCache(); //holds data for each tile (to reduce number of server requests)
 
 	constructor(props) {
 		super(props);
 		this.state = {
 			displayAll: false,
 			topoMap: false,
-			isLoading: false,
+            //used for rendering, should be set when isLoading above is set
+			isLoading: false, //but may not always be the same due to asynchronous nature of "setState()"
 			cacheData: true,
 			trailPointData: emptyTrailPoints,
-			dataVersion: 0
+			dataVersion: 0,
+            alert: {
+			    id: 0,
+			    type: "success",
+                message: "",
+                timeout: null
+            }
 		};
 	}
+
+    //toggles the style of map - topographic or dark
+    mapTypeHandler = (newValue) => {
+        this.setState({ topoMap: newValue });
+    };
 
 	//turns all data display on/off
 	displayAllHandler = (newValue) => {
@@ -77,37 +98,72 @@ class App extends Component {
 			this.setState({ displayAll: newValue });
 		} else {
 			this.setState({ displayAll: false });
-			alert("There is currently no data to display\nPlease change the map or view area")
+			this.alert(alerts.warn, "There is currently no data to display\nPlease change the map or view area", 5000);
 		}
 	};
 
+	//toggles whether data is cached
 	cacheDataHandler = (newValue) => {
-		if(newValue) {
+		if(newValue) { //if data should be cached, add current map data to cache
 			this.updateCache(this.timeSpan, this.state.trailPointData.data.features)
 		} else {
-			this.cache = emptyCache;
+			this.cache = emptyCache(); //empty the cache
 		}
 		this.setState({ cacheData: newValue });
 	};
 
+	//changes the time-span for which data is displayed on map
 	timeChangeHandler = (newTimeSpan) => {
 		console.log("Time: ", newTimeSpan, "selected");
-		if(this.state.cacheData) { //remove data from map and update status in cache
+		if(this.state.cacheData) { //remove old timespan data from map and update status in cache
 			let cache = this.cache[this.timeSpan];
 			for(let i = 0; i < cache.tileIds.length; i++) {
 				cache[cache.tileIds[i]].onMap = false;
 			}
 		}
 		this.timeSpan = newTimeSpan;
-		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData);
+		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData); //set empty map data and update for new time
 	};
 
-	//toggles the style of map - topographic or dark
-	mapTypeHandler = (newValue) => {
-		this.setState({ topoMap: newValue });
+	//when refresh button is clicked, empty cache and request new data
+	refreshHandler = () => {
+		console.log("Refresh data clicked");
+		if(!this.loading()) {
+		    // this.alert(alerts.error, "Error Oh No", 5000);
+            this.cache = emptyCache();
+            this.setState({ trailPointData: emptyTrailPoints });
+            this.updateMapData((success) => {
+                if(success) {
+                    this.alert(alerts.success, "Displaying latest data", 3000);
+                }
+            });
+		}
 	};
 
-	//TODO: custom alert box
+	//ONLY set loading through this function
+	setLoading = (value) => {
+		this.setState({ isLoading: value });
+		this.isLoading = value;
+	};
+
+	//use this function to return current loading status of map data
+	loading = () => {
+		// let isLoading = this.isLoading;
+		// let isInTransition = this.isLoading !== this.state.isLoading;
+		return this.isLoading;
+	};
+
+	//display inline alert
+    alert = (type, msg, timeout) => {
+        this.setState({
+            alert: {
+                id: this.state.alert.id + 1,
+                type: type,
+                message: msg,
+                timeout: timeout
+            }
+        });
+    };
 
 	//set params for the data that needs to be displayed on map
 	updateMapHandler = (top, bot, left, right, zoom) => {
@@ -120,7 +176,7 @@ class App extends Component {
 				left: left,
 				right: right
 			};
-			if(!this.state.isLoading) {
+			if(!this.loading()) {
 				this.updateMapData();
 			} else if(!this.updateQueued){ //if already loading, queue update function to wait before updating again
 				setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
@@ -130,12 +186,13 @@ class App extends Component {
 	};
 
 	//check if data is present for all of current view window; if not, request new data from cloud service
-	updateMapData = () => {
-		if(this.state.isLoading) { //if already loading, keep waiting before updating again
-			setTimeout(this.updateMapData, 500)
+    //done -> a function to call when done
+	updateMapData = (done) => {
+		if(this.loading()) { //if already loading, keep waiting before updating again
+			setTimeout(this.updateMapData, 500, done);
 		} else if(this.updateMapParams.zoom >= 4) { //update map if zoom is great enough to limit number of tiles
 			this.updateQueued = false;
-			this.setState({ isLoading: true });
+			this.setLoading(true);
 
 			let startTime = 0;
 			let now = new Date().valueOf();
@@ -157,7 +214,7 @@ class App extends Component {
 					break;
 				default:
 					console.error("In data for valid time span is being requested! Map failed to update!");
-					this.setState({ isLoading: false });
+					this.setLoading(false);
 					return;
 			}
 
@@ -168,12 +225,13 @@ class App extends Component {
 				//check if data is already on map or in cache
 				let cacheResult = Utility.checkCache(this.cache[this.timeSpan], tiles);
 				//fetch data if not in cache
-				if(cacheResult.tilesNeeded.length > 0) {
+                let needData = cacheResult.tilesNeeded.length > 0;
+				if(needData) {
 					this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
 					Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-						this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan);
+						this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan, done);
 				} else {
-					this.setState({ isLoading: false })
+					this.setLoading(false);
 				}
 				//add features to map that were in cache
 				if(cacheResult.features.length > 0) {
@@ -183,15 +241,16 @@ class App extends Component {
 							type: "FeatureCollection",
 							features: cacheResult.features
 						}
-					}, this.timeSpan, false);
+					}, this.timeSpan, needData ? () => {} : done, false);
 				}
 			} else { //data not cached, always request from data service
 				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-					this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan);
+					this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan, done);
 			}
 		} else {
 			this.updateQueued = false;
-			//TODO: alert user that they need to zoom in further before more data will be placed on map
+            //alert user that they need to zoom in before more data will be loaded
+			this.alert(alerts.warn, "Zoom in to load more data", 3000);
 		}
 	};
 
@@ -252,10 +311,13 @@ class App extends Component {
 		return displayFeatures;
 	};
 
-	newDataHandler = (msg, geoJson, timespan, replace = true) => {
+	newDataHandler = (msg, geoJson, timespan, callDone, replace = true) => {
+	    let call = callDone ? callDone : () => {}; //if function callDone is defined call it
 		if(geoJson === null) {
-			alert(msg);
-			this.setState({ displayAll: false, isLoading: false });
+			this.alert(alerts.error, msg);
+			call(false, msg);
+			this.setLoading(false);
+			this.setState({ displayAll: this.state.trailPointData.data.features.length > 0 });
 		} else if(geoJson.data && geoJson.data.type === "FeatureCollection") {
 			let features = !this.state.cacheData ? geoJson.data.features : (replace //if replace update cache, otherwise place old + new
 				? this.updateCache(timespan, geoJson.data.features)
@@ -269,13 +331,16 @@ class App extends Component {
 						}
 				},
 				dataVersion: this.state.dataVersion + 1,
-				displayAll: features.length > 0,
-				isLoading: false
-			})
+				displayAll: features.length > 0
+			});
+			this.setLoading(false);
+			call(true, msg);
 		} else {
-			this.setState({ displayAll: false, isLoading: false });
+			this.setLoading(false);
+			this.setState({ displayAll: false });
 			console.error("Invalid data fetched by request");
-			alert("Unable to display data");
+			this.alert(alerts.error, "Unable to display new data");
+            call(false, "Unable to display new data");
 		}
 	};
 
@@ -293,6 +358,7 @@ class App extends Component {
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
+                                  refreshHandler={this.refreshHandler} alert={this.state.alert}
 		            />
 		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
