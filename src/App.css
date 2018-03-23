@@ -136,6 +136,7 @@
     margin: 30px 0 0 0;
     border: 2px solid;
     border-radius: 5px;
+    /*TODO: get alert box to stay at the bottom*/
     /*font-size: 1em;*/
     /*align-self: flex-end;*/
     /*margin-top: auto;*/
