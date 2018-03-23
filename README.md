@@ -29,7 +29,7 @@ OR deploy/upload to S3: `npm run deploy` (NOT yet implimented)
 ## References
 
 - [React](https://reactjs.org/)
-- [React Readme](https://github.com/timothymathison/trail-monitor-ui/REACT_README.md)
+- [React Readme](./REACT_README.md)
 - [React Component Lifecycle](http://busypeoples.github.io/post/react-component-lifecycle/)
 - [ReactMapboxGL](https://github.com/alex3165/react-mapbox-gl/blob/HEAD/docs/API.md)
 - [MapboxGL](https://www.mapbox.com/mapbox-gl-js/api/)
