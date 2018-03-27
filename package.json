@@ -17,7 +17,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "s3-upload": "aws s3 sync build/ s3://trailmonitorclientbeta", //S3 bucket-name => "trailmonitorclientbeta"
+    "s3-upload": "aws s3 sync build/ s3://trailmonitorclientbeta",
     "deploy": "npm run build && npm run s3-upload"
   }
 }
