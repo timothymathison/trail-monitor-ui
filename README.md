@@ -30,6 +30,11 @@ AWS Secret Access Key [None]: <secret access key from above>
 Default region name [None]: us-east-2
 Default output format [None]: json
 ```
+Note 1: Target S3 bucket to which to deploy, is specified in [package.json](./package.json)
+
+Note 2: See references below for more information about Amazon S3
+
+---
 
 ## Dependencies
 - React: v16.2.0
