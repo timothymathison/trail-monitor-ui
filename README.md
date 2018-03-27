@@ -16,7 +16,20 @@ Run in development mode: `npm start`
 
 Build project for production: `npm run build`  (production code will be in the build folder)
 
-OR deploy/upload to S3: `npm run deploy` (NOT yet implimented)
+OR build and deploy/upload to S3: `npm run deploy` __Note: First set up CLI command line tool__
+
+Set Up CLI:
+
+- Install: `pip install awscli --upgrade --user`
+- Generate Access Key under "Deployment" user in IAM console
+- Configure credentials:
+```
+$ aws configure
+AWS Access Key ID [None]: <access key from above>
+AWS Secret Access Key [None]: <secret access key from above>
+Default region name [None]: us-east-2
+Default output format [None]: json
+```
 
 ## Dependencies
 - React: v16.2.0
@@ -38,3 +51,6 @@ OR deploy/upload to S3: `npm run deploy` (NOT yet implimented)
 - [React Spinners](http://reactscript.com/loading-spinner-kit-react/)
 - [React Toggle Button](https://gdowens.github.io/react-toggle-button/)
 - [React Select](https://github.com/JedWatson/react-select)
+- [Deploying React App to Amazon S3](https://medium.com/@omgwtfmarc/deploying-create-react-app-to-s3-or-cloudfront-48dae4ce0af)
+- [Installing AWS CLI Command Line Tool](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+- [CLI Documentation](https://aws.amazon.com/cli/)
