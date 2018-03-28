@@ -19,7 +19,6 @@ class ControlPanel extends Component {
 				               innerLabels={["R", "D"]} colors={["#e84c3d", "#2a57ab"]}/>
 				<SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
 				{/*TODO: Add map legend*/}
-				{/*TODO: Add force refresh button*/}
 				<Button handler={this.props.refreshHandler} text="Refresh"/>
 				<AlertBox alertId={this.props.alert.id} type={this.props.alert.type} message={this.props.alert.message} timeout={this.props.alert.timeout}/>
 			</div>

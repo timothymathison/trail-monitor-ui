@@ -1,4 +1,5 @@
 
+//TODO: store this value in package.json or other central location
 const awsApiUrl = "https://s71x34ids1.execute-api.us-east-2.amazonaws.com/TrailMonitor_Beta/trail-data?";
 
 class Utility {

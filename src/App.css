@@ -96,6 +96,7 @@
     cursor: pointer;
 }
 
+/*TODO: keep loading from getting zoom focus*/
 .loading {
     position: fixed;
     z-index: 100000;
