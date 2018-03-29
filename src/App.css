@@ -1,3 +1,8 @@
+
+h4 {
+    margin: 0 10px 0 0;
+}
+
 #App {
     width: 100%;
     height: 100%;
@@ -41,7 +46,7 @@
 #App-header {
     background-color: #222;
     box-sizing: border-box;
-    min-height: 50px !important;
+    /*min-height: 50px !important;*/
     height: 60px;
     width: 100%;
     padding: 0 10px;
@@ -51,6 +56,7 @@
     justify-content: space-between;
     align-items: center;
     flex-grow: 0;
+    z-index: 20;
 }
 
 #App-body {
@@ -66,21 +72,43 @@
 #control-panel {
     background-color: #8a8b8d;/*gray;*/
     width: 20%;
+    height: fit-content;
     min-width: 200px;
-    min-height: 300px;
     flex-grow: 1;
+    z-index: 10;
+}
+
+#open-close-panel {
+    display: none;
 }
 
 #map-container {
     background-color: #e4e4e4;
     width: 80%;
-    min-height: 400px;
+    /*min-height: 400px;*/
     flex-grow: 4;
+    z-index: 9;
 }
+
+.hidden {
+    /*display: none;*/
+    visibility: hidden;
+    z-index: 0;
+}
+
+.flexDefault {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    align-content: flex-start;
+}
+
 
 .toggle, .select {
     margin: 10px auto;
     min-width: 200px;
+    z-index: 11;
 }
 
 .button {
@@ -90,10 +118,15 @@
     background-color: #2a57ab;
     color: #e4e4e4;
     font-size: 1em;
-    border-radius: 15px;
+    border-radius: 5px;
     border: solid black 1px;
     text-align: center;
     cursor: pointer;
+}
+
+.button img {
+    height: 100%;
+    transition: transform 0.5s step-end;
 }
 
 .loading {
@@ -113,33 +146,20 @@
     font-size: 1.5em;
 }
 
-.hidden {
-    display: none;
-    z-index: 0;
-}
-
-.flexDefault {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    align-content: flex-start;
-}
-
 .alert-box {
-    width: 100%;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    width: 50%;
     height: 3em;
     box-sizing: border-box;
     padding: 1em 0;
     text-align: center;
     color: #e4e4e4;
-    margin: 30px 0 0 0;
+    margin: 0 0 0 -25%;
     border: 2px solid;
     border-radius: 5px;
-    /*TODO: get alert box to stay at the bottom*/
-    /*font-size: 1em;*/
-    /*align-self: flex-end;*/
-    /*margin-top: auto;*/
+    z-index: 19;
 }
 
 .success {
@@ -155,6 +175,18 @@
 .warning {
     background-color: #f1c40fb3;
     border-color: #f1c40f;
+}
+
+.veryBold {
+    font-weight: 700;
+}
+
+.down > img {
+    transform: rotate(90deg);
+}
+
+.up > img {
+    transform: rotate(-90deg);
 }
 
 div.Select-control {
@@ -174,12 +206,49 @@ div.Select-control {
     background-color: #3c9aff !important;
 }
 
-.veryBold {
-    font-weight: 700;
-}
 
-h4 {
-    margin: 0 10px 0 0;
-}
+@media only screen and (max-width: 999px) and (max-height: 700px) {
+    #polaris-logo {
+        width: 90px;
+        height: 15px;
+    }
 
-/*#365ba5*/
+    #App-body {
+        flex-flow: column nowrap;
+    }
+
+    #control-panel {
+        position: fixed;
+        top: 60px;
+        width: 100%;
+        padding-top: 30px;
+        transition: top 0.5s linear;
+    }
+
+    #open-close-panel {
+        display: inline;
+        position: fixed;
+        top: 60px;
+        left: 50%;
+        margin: 0 0 0 -50px;
+        z-index: 11;
+        width: 100px;
+    }
+
+    #map-container {
+        width: 100%;
+        height: 100%;
+    }
+
+    .hidden-panel {
+        top: -300px !important;
+    }
+
+    .alert-box {
+        position: fixed;
+        bottom: 50px;
+        left: 0;
+        width: 100%;
+        margin: 0;
+    }
+}
