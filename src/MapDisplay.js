@@ -195,7 +195,7 @@ class MapDisplay extends Component {
 					onZoomEnd = {this.handleMapEvents}
 					onRender = {this.handleMapEvents}>
 					<ZoomControl/>
-					<ScaleControl position="top-right" measurement={distanceUnits} style={{ right: "48px" }}/>
+					<ScaleControl position="bottom-right" measurement={distanceUnits} style={{ bottom: "20px" }}/>
 					{this.plotPoints()}
 					{this.plotHeatMap()}
 				</Map>

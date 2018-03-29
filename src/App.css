@@ -124,6 +124,11 @@ h4 {
     cursor: pointer;
 }
 
+.button img {
+    height: 100%;
+    transition: transform 0.5s step-end;
+}
+
 /*TODO: keep loading from getting zoom focus*/
 .loading {
     position: fixed;
@@ -153,6 +158,7 @@ h4 {
     border: 2px solid;
     border-radius: 5px;
     z-index: 19;
+    transition: visibility 0.5s linear;
     /*TODO: get alert box to stay at the bottom*/
     /*font-size: 1em;*/
     /*align-self: flex-end;*/
@@ -176,6 +182,14 @@ h4 {
 
 .veryBold {
     font-weight: 700;
+}
+
+.down > img {
+    transform: rotate(90deg);
+}
+
+.up > img {
+    transform: rotate(-90deg);
 }
 
 div.Select-control {
@@ -211,11 +225,15 @@ div.Select-control {
         top: 60px;
         width: 100%;
         padding-top: 30px;
+        transition: top 0.5s linear;
     }
 
     #open-close-panel {
+        display: inline;
         position: fixed;
         top: 60px;
+        left: 50%;
+        margin: 0 0 0 -50px;
         z-index: 11;
         width: 100px;
     }
@@ -223,6 +241,10 @@ div.Select-control {
     #map-container {
         width: 100%;
         height: 100%;
+    }
+
+    .hidden-panel {
+        top: -300px !important;
     }
 
     .alert-box {
