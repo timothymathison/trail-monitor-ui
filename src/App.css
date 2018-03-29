@@ -213,10 +213,6 @@ div.Select-control {
         height: 15px;
     }
 
-    #App-body {
-        flex-flow: column nowrap;
-    }
-
     #control-panel {
         position: fixed;
         top: 60px;
@@ -233,11 +229,6 @@ div.Select-control {
         margin: 0 0 0 -50px;
         z-index: 11;
         width: 100px;
-    }
-
-    #map-container {
-        width: 100%;
-        height: 100%;
     }
 
     .hidden-panel {
