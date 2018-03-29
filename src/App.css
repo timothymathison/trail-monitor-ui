@@ -148,21 +148,19 @@ h4 {
 }
 
 .alert-box {
-    width: 100%;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    width: 50%;
     height: 3em;
     box-sizing: border-box;
     padding: 1em 0;
     text-align: center;
     color: #e4e4e4;
-    margin: 50px 0 0 0;
+    margin: 0 0 0 -25%;
     border: 2px solid;
     border-radius: 5px;
     z-index: 19;
-    transition: visibility 0.5s linear;
-    /*TODO: get alert box to stay at the bottom*/
-    /*font-size: 1em;*/
-    /*align-self: flex-end;*/
-    /*margin-top: auto;*/
 }
 
 .success {
@@ -249,6 +247,9 @@ div.Select-control {
 
     .alert-box {
         position: fixed;
-        bottom: 0;
+        bottom: 50px;
+        left: 0;
+        width: 100%;
+        margin: 0;
     }
 }
