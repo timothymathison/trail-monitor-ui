@@ -3,7 +3,7 @@ import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-m
 import Utility from './Utility.js';
 
 const Map = ReactMapboxGl({
-	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
+	accessToken: process.env.REACT_APP_MAPBOX_API_KEY
 });
 
 const distanceUnits = "mi"; //distance units used for scale ruler

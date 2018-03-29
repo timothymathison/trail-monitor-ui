@@ -1,12 +1,12 @@
 
-//TODO: store this value in package.json or other central location
-const awsApiUrl = "https://s71x34ids1.execute-api.us-east-2.amazonaws.com/TrailMonitor_Beta/trail-data?";
+//API URL specified in .env* file
+const awsApiUrl = process.env.REACT_APP_AWS_API_URL;
 
 class Utility {
 
 	//request data from API - AWS cloud data service
 	static requestData = (top, left, right, bottom, startTime, dataHandler, timespan, done) => {
-		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
+		let url = awsApiUrl + "?lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
 
 		let apiRequest = new XMLHttpRequest();
 		apiRequest.onreadystatechange = function () {
