@@ -35,7 +35,7 @@ class AlertBox extends Component {
                 </div>
             );
         } else {
-            return <div className="hidden">hidden</div>;
+            return <div className="hidden alert-box">hidden</div>;
         }
     };
 
