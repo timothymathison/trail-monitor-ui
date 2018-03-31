@@ -93,6 +93,7 @@ class App extends Component {
     };
 
 	//turns all data display on/off
+	//TODO: if map was scrolled while off, load data for current area
 	displayAllHandler = (newValue) => {
 		if(this.state.trailPointData.data.features.length > 0) {
 			this.setState({ displayAll: newValue });
@@ -166,6 +167,7 @@ class App extends Component {
     };
 
 	//set params for the data that needs to be displayed on map
+	//TODO: don't load data if displayAll is off
 	updateMapHandler = (top, bot, left, right, zoom) => {
 		if(this.updateMapParams.zoom !== zoom || this.updateMapParams.top !== top || this.updateMapParams.bot !== bot
 			|| this.updateMapParams.left !== left || this.updateMapParams.right !== right) {
