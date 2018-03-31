@@ -21,7 +21,7 @@ class MapDisplay extends Component {
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
 	zoom = this.defaultZoom[0];
-	center = {lng: -92.958210, lat: 45.363131}; //default
+	// center = {lng: -92.958210, lat: 45.363131}; //default
 
 	constructor(props) {
 		super(props);
@@ -45,9 +45,10 @@ class MapDisplay extends Component {
 		});
 	}
 
-	shouldComponentUpdate(newProps) {
+	shouldComponentUpdate(newProps, newState) {
 		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap
-			|| newProps.dataVersion !== this.state.dataVersion;
+			|| newProps.dataVersion !== this.state.dataVersion || newState.center.lng !== this.state.center.lng ||
+			newState.center.lat !== this.state.center.lat;
 	}
 
 	//handle and react to map events
@@ -63,7 +64,8 @@ class MapDisplay extends Component {
 			let right = map.getBounds()._ne.lng;
 
 			this.zoom = zoom;
-			this.center = center; //update center so later re-renders don't re-position map
+			// this.center = center;
+			this.setState({ center: center }); //update center so later re-renders don't re-position map
 			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
 
 			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
@@ -74,7 +76,12 @@ class MapDisplay extends Component {
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
 			this.hasRendered = true;
-			this.props.updateHandler(top, bottom, left, right, map.getZoom());
+
+			navigator.geolocation.getCurrentPosition((pos) => { //center map at location
+				this.setState({ center: {lng: pos.coords.longitude, lat: pos.coords.latitude} });
+			}, () => { //unable to get current location, go ahead and load data
+                this.props.updateHandler(top, bottom, left, right, map.getZoom());
+			})
 		}
 		if(this.map !== map) {
 			this.map = map; //update copy of pointer to map
@@ -83,7 +90,6 @@ class MapDisplay extends Component {
 
 	//plots data as colored dots
 	plotPoints = () => {
-		console.log("Map rendered");
 		return (
 			<React.Fragment>
 				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
@@ -184,12 +190,13 @@ class MapDisplay extends Component {
 	};
 
 	render() {
+        // console.log("Map rendered");
 		return(
 			<div id="map-container">
 				<Map
 					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
-					center = {this.center}
+					center = {this.state.center}
 					zoom = {this.defaultZoom}
 					onDragEnd = {this.handleMapEvents}
 					onZoomEnd = {this.handleMapEvents}

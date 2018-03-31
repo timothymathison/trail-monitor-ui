@@ -19,7 +19,7 @@ class LoadIcon extends Component {
 
 	render() {
 		return (
-			<div onScroll={console.log("Loading scrolled")} className={this.state.loading ? "loading" : "hidden"}>
+			<div onScroll={() => {}} className={this.state.loading ? "loading" : "hidden"}>
 				<PropagateLoader color="#2a57ab" size={30} loading={this.state.loading}/>
 				{/*<br/>*/}
 				{/*Building Visual...*/}
