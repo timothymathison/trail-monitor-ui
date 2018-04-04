@@ -16,7 +16,7 @@ const millisecTimes = {
 	year: 31536000000 //365 days
 };
 
-const emptyTrailPoints = {
+const emptyTrailData = {
 	type: "geojson",
 	data: {
 		type: "FeatureCollection",
@@ -76,7 +76,8 @@ class App extends Component {
             //used for rendering, should be set when isLoading above is set
 			isLoading: false, //but may not always be the same due to asynchronous nature of "setState()"
 			cacheData: true,
-			trailPointData: emptyTrailPoints,
+			trailPointData: emptyTrailData,
+			trailLineData: emptyTrailData,
 			dataVersion: 0,
             alert: {
 			    id: 0,
@@ -123,7 +124,7 @@ class App extends Component {
 			}
 		}
 		this.timeSpan = newTimeSpan;
-		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData); //set empty map data and update for new time
+		this.setState({ trailPointData: emptyTrailData }, this.updateMapData); //set empty map data and update for new time
 	};
 
 	//when refresh button is clicked, empty cache and request new data
@@ -132,7 +133,7 @@ class App extends Component {
 		if(!this.loading()) {
 		    // this.alert(alerts.error, "Error Oh No", 5000);
             this.cache = emptyCache();
-            this.setState({ trailPointData: emptyTrailPoints });
+            this.setState({ trailPointData: emptyTrailData });
             this.updateMapData((success) => {
                 if(success) {
                     this.alert(alerts.success, "Displaying latest data", 3000);
@@ -332,6 +333,7 @@ class App extends Component {
 						features: features
 						}
 				},
+				trailLineData: Utility.buildLineData(),
 				dataVersion: this.state.dataVersion + 1,
 				displayAll: features.length > 0
 			});
@@ -362,9 +364,10 @@ class App extends Component {
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
                                   refreshHandler={this.refreshHandler} alert={this.state.alert}
 		            />
-		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
+		            <MapDisplay dataType="trailRoughness" dataVersion={this.state.dataVersion}
+		                        pointData={this.state.trailPointData} lineData={this.state.trailLineData}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
-		                        updateHandler={this.updateMapHandler} dataVersion={this.state.dataVersion}
+		                        updateHandler={this.updateMapHandler}
 		            />
 	            </div>
 				<LoadIcon isLoading={this.state.isLoading}/>

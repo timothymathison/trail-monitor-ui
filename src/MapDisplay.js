@@ -16,7 +16,7 @@ const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
 
 class MapDisplay extends Component {
 	defaultZoom = [9];
-	transitionZoom = 13; //zoom at which heatmap transitions to points
+	transitionZoom = 9; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
@@ -27,7 +27,8 @@ class MapDisplay extends Component {
 		super(props);
 		this.state = {
 			center: {lng: -92.958210, lat: 45.363131}, //default
-			geoJsonData: props.trailPointData,
+			pointData: props.pointData,
+			lineData: props.lineData,
 			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
@@ -37,7 +38,8 @@ class MapDisplay extends Component {
 
 	componentWillReceiveProps(newProps) {
 		this.setState({
-			geoJsonData: newProps.trailPointData,
+			pointData: newProps.pointData,
+			lineData: newProps.lineData,
 			dataVersion: newProps.dataVersion,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
@@ -88,17 +90,54 @@ class MapDisplay extends Component {
 		}
 	};
 
+	plotLines = () => {
+		return (
+			<React.Fragment>
+				<Source id="lineData" type="feature" geoJsonSource={this.state.lineData}/>
+				<Layer id="lineLayer" sourceId="lineData" type="line"
+                       layout={{
+                           "visibility": this.state.dataVisible ? "visible" : "none",
+                       }}
+				       paint={{
+                           "line-width": {
+                               'base': 2,
+                               'stops': [[12, 2], [20, 40]]
+                           },
+                           "line-color": [
+                               "interpolate",
+                               ["linear"],
+                               ["get", "value"],
+                               1, dataColorPalette[0],
+                               3, dataColorPalette[1],
+                               5, dataColorPalette[2],
+                               7, dataColorPalette[3],
+                               9, dataColorPalette[4]
+                           ],
+                           "line-opacity": [
+                               "interpolate",
+                               ["linear"],
+                               ["zoom"],
+                               this.transitionZoom - 1, 0,
+                               this.transitionZoom + 1, 1
+                           ]
+				       }}
+				>
+				</Layer>
+			</React.Fragment>
+		);
+	};
+
 	//plots data as colored dots
 	plotPoints = () => {
 		return (
 			<React.Fragment>
-				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
+				<Source id="pointData" type="feature" geoJsonSource={this.state.pointData}/>
 				<Layer id="pointLayer" sourceId="pointData" type="circle" minzoom={this.transitionZoom - 1}
 			        layout={{
 				       "visibility": this.state.dataVisible ? "visible" : "none",
 			        }}
 			        paint={{
-						'circle-radius': {
+						"circle-radius": {
 							'base': 1.75,
 							'stops': [[12, 2], [20, 50]]
 						},
@@ -130,7 +169,7 @@ class MapDisplay extends Component {
 	plotHeatMap = () => {
 		return (
 			<React.Fragment>
-				<Source id="heatData" geoJsonSource={this.state.geoJsonData}/>
+				<Source id="heatData" geoJsonSource={this.state.pointData}/>
 				<Layer id="heatmapLayer" sourceId="heatData" type="heatmap" maxzoom={this.transitionZoom + 1}
 			        layout={{
 				        "visibility": this.state.dataVisible ? "visible" : "none",
@@ -205,6 +244,7 @@ class MapDisplay extends Component {
 					<ScaleControl position="bottom-right" measurement={distanceUnits} style={{ bottom: "20px" }}/>
 					{this.plotPoints()}
 					{this.plotHeatMap()}
+					{this.plotLines()}
 				</Map>
 			</div>
 		);

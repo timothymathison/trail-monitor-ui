@@ -44,7 +44,7 @@ class Utility {
 
 		//for testing without making server requests:
 		// setTimeout(function () {
-		// 	dataCallback("Data Fetched", Utility.buildData(), timespan)
+		// 	dataCallback("Data Fetched", Utility.buildPointData(), timespan)
 		// }, 1000);
 	};
 
@@ -88,7 +88,7 @@ class Utility {
 	};
 
 	//builds hard coded data
-	static buildData = () => {
+	static buildPointData = () => {
 		return {
 			"type": "geojson",
 			"data": {
@@ -266,7 +266,41 @@ class Utility {
 				]
 			}
 		};
-	}
+	};
+
+	static buildLineData = () => {
+		return {
+			type: "geojson",
+			data: {
+				type: "FeatureCollection",
+				features: [
+					{
+						type: "Feature",
+						geometry: {
+							type: "LineString",
+							coordinates: [
+								[-92.958210, 45.363131], [-92.958210, 45.364531]
+							]
+						},
+						properties: {
+							value: 3
+						}
+					},{
+                        type: "Feature",
+                        geometry: {
+                            type: "LineString",
+                            coordinates: [
+                                [-92.960510, 45.368031], [-92.961510, 45.366031]
+                            ]
+                        },
+                        properties: {
+                            value: 8
+                        }
+                    }
+				]
+			}
+		};
+	};
 }
 
 export default Utility
