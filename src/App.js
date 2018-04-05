@@ -316,15 +316,15 @@ class App extends Component {
 
 	newDataHandler = (msg, geoJson, timespan, callDone, replace = true) => {
 	    let call = callDone ? callDone : () => {}; //if function callDone is defined call it
-		if(geoJson === null) {
+		if(geoJson === null || geoJson === undefined) {
 			this.alert(alerts.error, msg);
 			call(false, msg);
 			this.setLoading(false);
 			this.setState({ displayAll: this.state.trailPointData.data.features.length > 0 });
 		} else if(geoJson.data && geoJson.data.type === "FeatureCollection") {
-			let features = !this.state.cacheData ? geoJson.data.features : (replace //if replace update cache, otherwise place old + new
-				? this.updateCache(timespan, geoJson.data.features)
-				: this.state.trailPointData.data.features.concat(geoJson.data.features));
+			let features = !this.state.cacheData ? geoJson.data.pointData : (replace //if replace update cache, otherwise place old + new
+				? this.updateCache(timespan, geoJson.data.pointData)
+				: this.state.trailPointData.data.features.concat(geoJson.data.pointData));
 			this.setState({
 				trailPointData: {
 					type: "geojson",
