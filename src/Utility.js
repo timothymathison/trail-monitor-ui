@@ -78,8 +78,8 @@ class Utility {
 	static listOfTiles = (top, bot, left, right) => {
 		let tileCoords = [];
 
-		for(let lat = top; lat >= bot; lat--) {
-			for(let lng = left; lng <= right; lng++) {
+		for(let lat = Math.floor(top); lat >= Math.floor(bot); lat--) {
+			for(let lng = Math.floor(left); lng <= Math.floor(right); lng++) {
 				tileCoords.push(Utility.redCoordDim(lng, lat).toString()); //add single dimension tile coordinates to list
 			}
 		}

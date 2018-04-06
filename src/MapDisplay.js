@@ -70,7 +70,8 @@ class MapDisplay extends Component {
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
 			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
 
-			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
+			console.log("Edges: ", top, bottom, left, right);
+			console.log("tiles: " + Utility.listOfTiles(top, bottom, left, right));
 			console.log("zoom: " + map.getZoom());
 		} else if(event.type === "render" && !this.hasRendered) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;

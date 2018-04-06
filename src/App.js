@@ -321,10 +321,11 @@ class App extends Component {
 			call(false, msg);
 			this.setLoading(false);
 			this.setState({ displayAll: this.state.trailPointData.data.features.length > 0 });
-		} else if(geoJson.data && geoJson.data.type === "FeatureCollection") {
-			let features = !this.state.cacheData ? geoJson.data.pointData : (replace //if replace update cache, otherwise place old + new
-				? this.updateCache(timespan, geoJson.data.pointData)
-				: this.state.trailPointData.data.features.concat(geoJson.data.pointData));
+		} else if(geoJson.data && geoJson.data.type === "geotrailinfo") {
+			// let features = !this.state.cacheData ? geoJson.data.pointData : (replace //if replace update cache, otherwise place old + new
+			// 	? this.updateCache(timespan, geoJson.data.pointData)
+			// 	: this.state.trailPointData.data.features.concat(geoJson.data.pointData));
+			let features = [];
 			this.setState({
 				trailPointData: {
 					type: "geojson",
