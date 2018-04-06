@@ -76,6 +76,7 @@ h4 {
     min-width: 200px;
     flex-grow: 1;
     z-index: 10;
+    /*TODO: fix control panel not filling height of page*/
 }
 
 #open-close-panel {
