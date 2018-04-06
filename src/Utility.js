@@ -1,12 +1,12 @@
 
-//TODO: store this value in package.json or other central location
-const awsApiUrl = "https://s71x34ids1.execute-api.us-east-2.amazonaws.com/TrailMonitor_Beta/trail-data?";
+//API URL specified in .env* file
+const awsApiUrl = process.env.REACT_APP_AWS_API_URL;
 
 class Utility {
 
 	//request data from API - AWS cloud data service
 	static requestData = (top, left, right, bottom, startTime, dataHandler, timespan, done) => {
-		let url = awsApiUrl + "lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
+		let url = awsApiUrl + "?lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
 
 		let apiRequest = new XMLHttpRequest();
 		apiRequest.onreadystatechange = function () {
@@ -44,30 +44,8 @@ class Utility {
 
 		//for testing without making server requests:
 		// setTimeout(function () {
-		// 	dataCallback("Data Fetched", Utility.buildData(), timespan)
+		// 	dataCallback("Data Fetched", Utility.buildPointData(), timespan)
 		// }, 1000);
-	};
-
-	//checks cache for all data corresponding to lookForTiles
-	static checkCache = (cache, lookForTiles) => {
-		let tilesNeeded = [];
-		let features = [];
-		//check if tiles are in cache and if they are already displayed on map
-		for(let i = 0; i < lookForTiles.length; i++) {
-			let tileId = lookForTiles[i];
-			let tile = cache[tileId];
-			if(tile === undefined) { //not found, need to request from backend data service
-				tilesNeeded.push(tileId);
-			} else if(!tile.onMap) { //found, but is not displayed on map
-				features.push.apply(features, tile.features); //features to be added to map
-				tile.onMap = true; //TODO: this should probably be done in App
-			}
-		}
-
-		return {
-			tilesNeeded: tilesNeeded,
-			features: features
-		};
 	};
 
 	//Reduce-Coordinate-Dimension - Generates a unique linear value (tile identifier/coordinate) for each integer latitude/longitude combination
@@ -78,8 +56,8 @@ class Utility {
 	static listOfTiles = (top, bot, left, right) => {
 		let tileCoords = [];
 
-		for(let lat = top; lat >= bot; lat--) {
-			for(let lng = left; lng <= right; lng++) {
+		for(let lat = Math.floor(top); lat >= Math.floor(bot); lat--) {
+			for(let lng = Math.floor(left); lng <= Math.floor(right); lng++) {
 				tileCoords.push(Utility.redCoordDim(lng, lat).toString()); //add single dimension tile coordinates to list
 			}
 		}
@@ -88,7 +66,7 @@ class Utility {
 	};
 
 	//builds hard coded data
-	static buildData = () => {
+	static buildPointData = () => {
 		return {
 			"type": "geojson",
 			"data": {
@@ -266,7 +244,41 @@ class Utility {
 				]
 			}
 		};
-	}
+	};
+
+	static buildLineData = () => {
+		return {
+			type: "geojson",
+			data: {
+				type: "FeatureCollection",
+				features: [
+					{
+						type: "Feature",
+						geometry: {
+							type: "LineString",
+							coordinates: [
+								[-92.958210, 45.363131], [-92.958210, 45.364531]
+							]
+						},
+						properties: {
+							value: 3
+						}
+					},{
+                        type: "Feature",
+                        geometry: {
+                            type: "LineString",
+                            coordinates: [
+                                [-92.960510, 45.368031], [-92.961510, 45.366031]
+                            ]
+                        },
+                        properties: {
+                            value: 8
+                        }
+                    }
+				]
+			}
+		};
+	};
 }
 
 export default Utility

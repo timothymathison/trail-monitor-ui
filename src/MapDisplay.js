@@ -3,7 +3,7 @@ import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-m
 import Utility from './Utility.js';
 
 const Map = ReactMapboxGl({
-	accessToken: "pk.eyJ1IjoidGltb3RoeW1hdGhpc29uIiwiYSI6ImNqZGc3OWp3NzBoMXcycG5xMHBwbG90cHAifQ.9GqvGqNIxpezA5ofbe0Wbg"
+	accessToken: process.env.REACT_APP_MAPBOX_API_KEY
 });
 
 const distanceUnits = "mi"; //distance units used for scale ruler
@@ -16,18 +16,20 @@ const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
 
 class MapDisplay extends Component {
 	defaultZoom = [9];
-	transitionZoom = 13; //zoom at which heatmap transitions to points
+	transitionZoom = 9; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
 	zoom = this.defaultZoom[0];
-	center = {lng: -92.958210, lat: 45.363131}; //default
+	// center = {lng: -92.958210, lat: 45.363131}; //default
 
 	constructor(props) {
 		super(props);
+		let mapData = this.processData(props.trailInfoTiles);
 		this.state = {
 			center: {lng: -92.958210, lat: 45.363131}, //default
-			geoJsonData: props.trailPointData,
+			pointData: mapData.pointData,
+			lineData: mapData.lineData,
 			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
@@ -36,8 +38,16 @@ class MapDisplay extends Component {
 	}
 
 	componentWillReceiveProps(newProps) {
+		let mapData = this.state.dataVersion !== newProps.dataVersion ?
+            this.processData(newProps.trailInfoTiles) :
+			{
+				pointData: this.state.pointData,
+				lineData: this.state.lineData
+			};
+
 		this.setState({
-			geoJsonData: newProps.trailPointData,
+			pointData: mapData.pointData,
+			lineData: mapData.lineData,
 			dataVersion: newProps.dataVersion,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
@@ -45,9 +55,10 @@ class MapDisplay extends Component {
 		});
 	}
 
-	shouldComponentUpdate(newProps) {
-		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap
-			|| newProps.dataVersion !== this.state.dataVersion;
+	shouldComponentUpdate(newProps, newState) {
+		return newState.dataVisible !== this.state.dataVisible || newState.topoMap !== this.state.topoMap
+			|| newState.dataVersion !== this.state.dataVersion || newState.center.lng !== this.state.center.lng ||
+			newState.center.lat !== this.state.center.lat;
 	}
 
 	//handle and react to map events
@@ -63,10 +74,12 @@ class MapDisplay extends Component {
 			let right = map.getBounds()._ne.lng;
 
 			this.zoom = zoom;
-			this.center = center; //update center so later re-renders don't re-position map
+			// this.center = center;
+			this.setState({ center: center }); //update center so later re-renders don't re-position map
 			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
 
-			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
+			console.log("Edges: ", top, bottom, left, right);
+			console.log("tiles: " + Utility.listOfTiles(top, bottom, left, right));
 			console.log("zoom: " + map.getZoom());
 		} else if(event.type === "render" && !this.hasRendered) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;
@@ -74,25 +87,99 @@ class MapDisplay extends Component {
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
 			this.hasRendered = true;
-			this.props.updateHandler(top, bottom, left, right, map.getZoom());
+
+			navigator.geolocation.getCurrentPosition((pos) => { //center map at location
+				this.setState({ center: {lng: pos.coords.longitude, lat: pos.coords.latitude} });
+			}, () => { //unable to get current location, go ahead and load data
+                this.props.updateHandler(top, bottom, left, right, map.getZoom());
+			})
 		}
 		if(this.map !== map) {
 			this.map = map; //update copy of pointer to map
 		}
 	};
 
-	//plots data as colored dots
-	plotPoints = () => {
-		console.log("Map rendered");
+	//combine features from each tile to two geojson objects (points, and lines)
+	processData = (tiles) => {
+		let pointFeatures = [];
+		let lineFeatures = [];
+		for(let i = 0; i < tiles.length; i++) {
+			let tile = tiles[i];
+			if(tile.type === "FeatureCollection") {
+				pointFeatures.push.apply(pointFeatures, tile.pointData); //add tile point feature list to point data
+				if(tile.lineData) {
+					lineFeatures.push.apply(lineFeatures, tile.lineData) //add tile line feature list to line data
+				}
+			} else if (tile.type === "Feature") {
+				pointFeatures.push(tile.features);
+			}
+		}
+		return {
+			pointData: {
+                type: "geojson",
+                data: {
+                    type: "FeatureCollection",
+                    features: pointFeatures
+                }
+			},
+			lineData: {
+				type: "geojson",
+				data: {
+					type: "FeatureCollection",
+					features: lineFeatures
+				}
+			}
+		};
+	};
+
+	plotLines = () => {
 		return (
 			<React.Fragment>
-				<Source id="pointData" type="feature" geoJsonSource={this.state.geoJsonData}/>
+				<Source id="lineData" type="feature" geoJsonSource={this.state.lineData}/>
+				<Layer id="lineLayer" sourceId="lineData" type="line"
+                       layout={{
+                           "visibility": this.state.dataVisible ? "visible" : "none",
+                       }}
+				       paint={{
+                           "line-width": {
+                               'base': 2,
+                               'stops': [[12, 2], [20, 40]]
+                           },
+                           "line-color": [
+                               "interpolate",
+                               ["linear"],
+                               ["get", "value"],
+                               1, dataColorPalette[0],
+                               3, dataColorPalette[1],
+                               5, dataColorPalette[2],
+                               7, dataColorPalette[3],
+                               9, dataColorPalette[4]
+                           ],
+                           "line-opacity": [
+                               "interpolate",
+                               ["linear"],
+                               ["zoom"],
+                               this.transitionZoom - 1, 0,
+                               this.transitionZoom + 1, 1
+                           ]
+				       }}
+				>
+				</Layer>
+			</React.Fragment>
+		);
+	};
+
+	//plots data as colored dots
+	plotPoints = () => {
+		return (
+			<React.Fragment>
+				<Source id="pointData" type="feature" geoJsonSource={this.state.pointData}/>
 				<Layer id="pointLayer" sourceId="pointData" type="circle" minzoom={this.transitionZoom - 1}
 			        layout={{
 				       "visibility": this.state.dataVisible ? "visible" : "none",
 			        }}
 			        paint={{
-						'circle-radius': {
+						"circle-radius": {
 							'base': 1.75,
 							'stops': [[12, 2], [20, 50]]
 						},
@@ -124,7 +211,7 @@ class MapDisplay extends Component {
 	plotHeatMap = () => {
 		return (
 			<React.Fragment>
-				<Source id="heatData" geoJsonSource={this.state.geoJsonData}/>
+				<Source id="heatData" geoJsonSource={this.state.pointData}/>
 				<Layer id="heatmapLayer" sourceId="heatData" type="heatmap" maxzoom={this.transitionZoom + 1}
 			        layout={{
 				        "visibility": this.state.dataVisible ? "visible" : "none",
@@ -184,12 +271,14 @@ class MapDisplay extends Component {
 	};
 
 	render() {
+		//TODO: render compass
+		//TODO: add search for location box
 		return(
 			<div id="map-container">
 				<Map
 					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
-					center = {this.center}
+					center = {this.state.center}
 					zoom = {this.defaultZoom}
 					onDragEnd = {this.handleMapEvents}
 					onZoomEnd = {this.handleMapEvents}
@@ -198,6 +287,7 @@ class MapDisplay extends Component {
 					<ScaleControl position="bottom-right" measurement={distanceUnits} style={{ bottom: "20px" }}/>
 					{this.plotPoints()}
 					{this.plotHeatMap()}
+					{this.plotLines()}
 				</Map>
 			</div>
 		);

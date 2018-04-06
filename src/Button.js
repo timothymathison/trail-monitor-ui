@@ -18,7 +18,7 @@ class Button extends Component {
     render() {
         return (
             <button id={this.props.id} className={"button " + (this.state.className ? this.state.className : "")} onClick={this.props.handler}>
-                {this.props.symbol ? <img src={this.props.symbol}/> : ""}
+                {this.props.symbol ? <img src={this.props.symbol} alt=""/> : ""}
                 {this.state.text}
             </button>
         );

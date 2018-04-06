@@ -16,12 +16,9 @@ const millisecTimes = {
 	year: 31536000000 //365 days
 };
 
-const emptyTrailPoints = {
-	type: "geojson",
-	data: {
-		type: "FeatureCollection",
-		features: []
-	}
+const emptyTrailData = {
+	featureCount: 0,
+	tiles: []
 };
 
 const timeOptions = [
@@ -34,7 +31,7 @@ const timeOptions = [
 const defaultTimeSpan = timeOptions[4].value;
 
 //cache names MUST BE SAME as time option values above
-let emptyCache = () => {
+const emptyCache = () => {
 	return {
         pastDay: {
             tileIds: []
@@ -76,7 +73,7 @@ class App extends Component {
             //used for rendering, should be set when isLoading above is set
 			isLoading: false, //but may not always be the same due to asynchronous nature of "setState()"
 			cacheData: true,
-			trailPointData: emptyTrailPoints,
+			trailInfoData: emptyTrailData,
 			dataVersion: 0,
             alert: {
 			    id: 0,
@@ -93,8 +90,9 @@ class App extends Component {
     };
 
 	//turns all data display on/off
+	//TODO: if map was scrolled while off, load data for current area
 	displayAllHandler = (newValue) => {
-		if(this.state.trailPointData.data.features.length > 0) {
+		if(this.state.trailInfoData.featureCount > 0) {
 			this.setState({ displayAll: newValue });
 		} else {
 			this.setState({ displayAll: false });
@@ -105,7 +103,7 @@ class App extends Component {
 	//toggles whether data is cached
 	cacheDataHandler = (newValue) => {
 		if(newValue) { //if data should be cached, add current map data to cache
-			this.updateCache(this.timeSpan, this.state.trailPointData.data.features)
+			this.processDataUpdate(this.timeSpan, this.state.trailInfoData.tiles)
 		} else {
 			this.cache = emptyCache(); //empty the cache
 		}
@@ -122,16 +120,15 @@ class App extends Component {
 			}
 		}
 		this.timeSpan = newTimeSpan;
-		this.setState({ trailPointData: emptyTrailPoints }, this.updateMapData); //set empty map data and update for new time
+		this.setState({ trailInfoData: emptyTrailData }, this.updateMapData); //set empty map data and update for new time
 	};
 
 	//when refresh button is clicked, empty cache and request new data
 	refreshHandler = () => {
 		console.log("Refresh data clicked");
 		if(!this.loading()) {
-		    // this.alert(alerts.error, "Error Oh No", 5000);
             this.cache = emptyCache();
-            this.setState({ trailPointData: emptyTrailPoints });
+            this.setState({ trailInfoData: emptyTrailData });
             this.updateMapData((success) => {
                 if(success) {
                     this.alert(alerts.success, "Displaying latest data", 3000);
@@ -166,6 +163,7 @@ class App extends Component {
     };
 
 	//set params for the data that needs to be displayed on map
+	//TODO: don't load data if displayAll is off
 	updateMapHandler = (top, bot, left, right, zoom) => {
 		if(this.updateMapParams.zoom !== zoom || this.updateMapParams.top !== top || this.updateMapParams.bot !== bot
 			|| this.updateMapParams.left !== left || this.updateMapParams.right !== right) {
@@ -220,27 +218,27 @@ class App extends Component {
 
 			if(this.state.cacheData) {
 				//tiles that are currently within map window view
-				let tiles = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
+				let tileIds = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
 					this.updateMapParams.right);
 				//check if data is already on map or in cache
-				let cacheResult = Utility.checkCache(this.cache[this.timeSpan], tiles);
+				let cacheResult = this.checkCache(tileIds);
 				//fetch data if not in cache
-                let needData = cacheResult.tilesNeeded.length > 0;
+                let needData = cacheResult.tileIdsNeeded.length > 0;
 				if(needData) {
-					this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
+					// this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
 					Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
 						this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan, done);
 				} else {
 					this.setLoading(false);
 				}
 				//add features to map that were in cache
-				if(cacheResult.features.length > 0) {
+				if(cacheResult.tiles.length > 0) {
 					this.newDataHandler(null, {
-						type: "geojson",
+						type: "geotrailinfo",
 						data: {
-							type: "FeatureCollection",
-							features: cacheResult.features
-						}
+                            tiles: cacheResult.tiles,
+							featureCount: cacheResult.featureCount
+                        }
 					}, this.timeSpan, needData ? () => {} : done, false);
 				}
 			} else { //data not cached, always request from data service
@@ -254,93 +252,105 @@ class App extends Component {
 		}
 	};
 
+    //checks cache for all data corresponding to lookForTiles
+    checkCache = (lookForTiles) => {
+    	let cache = this.cache[this.timeSpan];
+        let tileIdsNeeded = [];
+        let tiles = [];
+        let featureCount = 0;
+        //check if tiles are in cache and if they are already displayed on map
+        for(let i = 0; i < lookForTiles.length; i++) {
+            let tileId = lookForTiles[i];
+            let tile = cache[tileId];
+            if(tile === undefined) { //not found, need to request from backend data service
+                tileIdsNeeded.push(tileId);
+            } else if(!tile.onMap) { //found, but is not displayed on map
+                tiles.push(tile); //tiles to be added to map
+                tile.onMap = true;
+                featureCount += (tile.pointData ? tile.pointData.length : 0) + (tile.lineData ? tile.lineData.length : 0);
+            }
+        }
+
+        return {
+            tileIdsNeeded: tileIdsNeeded,
+            tiles: tiles,
+            featureCount: featureCount
+        };
+    };
+
 	//update tiles in cache with data (features) returned from server, and return all features to be displayed
-	//TODO: look for ways to combine loops
-	updateCache = (timespan, features) => {
-		let tiles = {};
-		let tileIds = [];
-		//for each feature determine what tile it belongs to
-		let prevTileId = "0";
-		for(let i = 0; i < features.length; i++) {
-			let feature = features[i];
-			let tileId = Utility.redCoordDim(feature.geometry.coordinates[0], feature.geometry.coordinates[1]).toString();
-			if(prevTileId !== tileId || i === 0) { //feature is for new tile
-				//new cache tile
-				tiles[tileId] = {
-					onMap: true,
-					features: [feature]
-				};
-				tileIds.push(tileId);
-				prevTileId = tileId;
-			} else {
-				tiles[tileId].features.push(feature); //add feature to tile in list
-			}
-		}
+	processDataUpdate = (timespan, tiles) => {
 		let cache = this.cache[timespan];
 		//for each tile if it's not in cache or present on map, add to cache
-		for(let i = 0; i < tileIds.length; i++) {
-			let tileId = tileIds[i];
-			let tile = tiles[tileId];
+		for(let i = 0; i < tiles.length; i++) {
+			let tile = tiles[i];
+			let tileId = Utility.redCoordDim(tile.cornerCoordinate.lng, tile.cornerCoordinate.lat).toString();
 			let cacheTile = cache[tileId]; //check for tile in cache
 			if(!cacheTile) {
-				cache[tileId] = tile; //add tile to cache
-				cache.tileIds.push(tileId);
-			} else if(!cacheTile.onMap || cacheTile.features.length !== tile.features.length) {
-				cache[tileId] = tile; //update tile in cache
+				cache.tileIds.push(tileId); //new tile, add to list of tile ids
 			}
+			cache[tileId] = tile; //add/update tile in cache
 		}
-		//loop through loading tiles Ids and add empty tiles to cache
-		for(let i = 0; i < this.tileIdOfLoading.length; i++) {
-			let tileId = this.tileIdOfLoading[i];
-			if(cache[tileId] === undefined) {
-				cache[tileId] = {
-					onMap: true,
-					features: []
-				};
-				cache.tileIds.push(tileId);
-			}
-		}
-		this.tileIdOfLoading = [];
 		console.log("Cache for " + timespan + " updated:", cache);
 
 		//up to-date features to display
-		let displayFeatures = [];
+		let displayTiles = [];
+		let featureCount = 0;
 		for(let i = 0; i < cache.tileIds.length; i++) {
-			displayFeatures.push.apply(displayFeatures, cache[cache.tileIds[i]].features); //add features to map
+			let tile = cache[cache.tileIds[i]];
+			tile.onMap = true;
+			displayTiles.push(tile); //add to list which will be displayed on map
+			featureCount += (tile.pointData ? tile.pointData.length : 0) + (tile.lineData ? tile.lineData.length : 0);
 		}
-		return displayFeatures;
+		return {
+			tiles: displayTiles,
+			featureCount: featureCount
+        };
 	};
 
-	newDataHandler = (msg, geoJson, timespan, callDone, replace = true) => {
+	//handles and sends to map new data coming from cache or server
+	newDataHandler = (msg, trailInfo, timespan, callDone, fromServer = true) => {
 	    let call = callDone ? callDone : () => {}; //if function callDone is defined call it
-		if(geoJson === null) {
+		if(trailInfo === null) {
 			this.alert(alerts.error, msg);
 			call(false, msg);
 			this.setLoading(false);
-			this.setState({ displayAll: this.state.trailPointData.data.features.length > 0 });
-		} else if(geoJson.data && geoJson.data.type === "FeatureCollection") {
-			let features = !this.state.cacheData ? geoJson.data.features : (replace //if replace update cache, otherwise place old + new
-				? this.updateCache(timespan, geoJson.data.features)
-				: this.state.trailPointData.data.features.concat(geoJson.data.features));
-			this.setState({
-				trailPointData: {
-					type: "geojson",
-					data: {
-						type: "FeatureCollection",
-						features: features
-						}
-				},
-				dataVersion: this.state.dataVersion + 1,
-				displayAll: features.length > 0
-			});
-			this.setLoading(false);
-			call(true, msg);
+			this.setState({ displayAll: this.state.trailInfoData.featureCount > 0 });
+		} else if(trailInfo.data && trailInfo.type === "geotrailinfo") {
+			try {
+                let displayTiles;
+                if (!this.state.cacheData) {
+                    displayTiles = {
+                        tiles: trailInfo.data.tiles,
+                        featureCount: trailInfo.data.featureCount
+                    }
+                } else if (fromServer) { //if from server update/process cache, otherwise place old + new
+                    displayTiles = this.processDataUpdate(timespan, trailInfo.data.tiles);
+                } else { //if from cache
+                    displayTiles = {
+                        tiles: this.state.trailInfoData.tiles.concat(trailInfo.data.tiles),
+                        featureCount: this.state.trailInfoData.featureCount + trailInfo.data.featureCount
+                    }
+                }
+                this.setState({
+                    trailInfoData: displayTiles,
+                    dataVersion: this.state.dataVersion + 1,
+                    displayAll: displayTiles.featureCount > 0
+                });
+                call(true, msg);
+            } catch (e) {
+                this.setState({ displayAll: false });
+                console.error("Error when trying to process new data:", e);
+                this.alert(alerts.error, "Unable to display data");
+                call(false, "Unable to display data");
+            }
+            this.setLoading(false);
 		} else {
 			this.setLoading(false);
 			this.setState({ displayAll: false });
 			console.error("Invalid data fetched by request");
-			this.alert(alerts.error, "Unable to display new data");
-            call(false, "Unable to display new data");
+			this.alert(alerts.error, "Unable to display data");
+            call(false, "Unable to display data");
 		}
 	};
 
@@ -360,9 +370,10 @@ class App extends Component {
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
                                   refreshHandler={this.refreshHandler} alert={this.state.alert}
 		            />
-		            <MapDisplay dataType="trailRoughness" trailPointData={this.state.trailPointData}
+		            <MapDisplay dataType="trailRoughness" dataVersion={this.state.dataVersion}
+                                trailInfoTiles={this.state.trailInfoData.tiles}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
-		                        updateHandler={this.updateMapHandler} dataVersion={this.state.dataVersion}
+		                        updateHandler={this.updateMapHandler}
 		            />
 	            </div>
 				<LoadIcon isLoading={this.state.isLoading}/>

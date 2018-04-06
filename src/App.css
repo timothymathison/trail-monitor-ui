@@ -76,6 +76,7 @@ h4 {
     min-width: 200px;
     flex-grow: 1;
     z-index: 10;
+    /*TODO: fix control panel not filling height of page*/
 }
 
 #open-close-panel {
@@ -132,9 +133,9 @@ h4 {
 .loading {
     position: fixed;
     z-index: 100000;
-    width: 200px;
-    height: 150px;
-    margin: -75px 0 0 -100px;
+    /*width: 200px;*/
+    /*height: 150px;*/
+    /*margin: -75px 0 0 -100px;*/
     top: 50%;
     left: 50%;
     color: #2a57ab;
@@ -213,10 +214,6 @@ div.Select-control {
         height: 15px;
     }
 
-    #App-body {
-        flex-flow: column nowrap;
-    }
-
     #control-panel {
         position: fixed;
         top: 60px;
@@ -235,11 +232,6 @@ div.Select-control {
         width: 100px;
     }
 
-    #map-container {
-        width: 100%;
-        height: 100%;
-    }
-
     .hidden-panel {
         top: -300px !important;
     }
@@ -250,5 +242,9 @@ div.Select-control {
         left: 0;
         width: 100%;
         margin: 0;
+    }
+
+    .loading {
+        left: 45%;
     }
 }

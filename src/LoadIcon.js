@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { HashLoader, RingLoader } from 'react-spinners';
+import { PropagateLoader } from 'react-spinners';
 
 class LoadIcon extends Component {
 	constructor(props) {
@@ -19,8 +19,8 @@ class LoadIcon extends Component {
 
 	render() {
 		return (
-			<div onScroll={console.log("Loading scrolled")} className={this.state.loading ? "loading" : "hidden"}>
-				<RingLoader color="#2a57ab" size={100} loading={this.state.loading}/>
+			<div onScroll={() => {}} className={this.state.loading ? "loading" : "hidden"}>
+				<PropagateLoader color="#2a57ab" size={30} loading={this.state.loading}/>
 				{/*<br/>*/}
 				{/*Building Visual...*/}
 			</div>

@@ -38,6 +38,8 @@ Note 2: See references below for more information about Amazon S3
 
 ## Dependencies
 - React: v16.2.0
+- react-dom: v16.2.0
+- env-cmd: v7.0.0
 - mapbox-gl: v0.44.1
 - react-mapbox-gl: v3.8.0
 - react-select: v1.2.1
@@ -47,6 +49,7 @@ Note 2: See references below for more information about Amazon S3
 ## References
 
 - [React](https://reactjs.org/)
+- [Environment Command Tool](https://github.com/toddbluhm/env-cmd)
 - [React Readme](./REACT_README.md)
 - [React Component Lifecycle](http://busypeoples.github.io/post/react-component-lifecycle/)
 - [React MapboxGL](https://github.com/alex3165/react-mapbox-gl/blob/HEAD/docs/API.md)
