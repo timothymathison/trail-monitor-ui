@@ -48,28 +48,6 @@ class Utility {
 		// }, 1000);
 	};
 
-	//checks cache for all data corresponding to lookForTiles
-	static checkCache = (cache, lookForTiles) => {
-		let tilesNeeded = [];
-		let features = [];
-		//check if tiles are in cache and if they are already displayed on map
-		for(let i = 0; i < lookForTiles.length; i++) {
-			let tileId = lookForTiles[i];
-			let tile = cache[tileId];
-			if(tile === undefined) { //not found, need to request from backend data service
-				tilesNeeded.push(tileId);
-			} else if(!tile.onMap) { //found, but is not displayed on map
-				features.push.apply(features, tile.features); //features to be added to map
-				tile.onMap = true; //TODO: this should probably be done in App
-			}
-		}
-
-		return {
-			tilesNeeded: tilesNeeded,
-			features: features
-		};
-	};
-
 	//Reduce-Coordinate-Dimension - Generates a unique linear value (tile identifier/coordinate) for each integer latitude/longitude combination
 	static redCoordDim = (lng, lat) => {
 		return Math.floor(lng) * 200 + Math.floor(lat);

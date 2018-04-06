@@ -25,10 +25,11 @@ class MapDisplay extends Component {
 
 	constructor(props) {
 		super(props);
+		let mapData = this.processData(props.trailInfoTiles);
 		this.state = {
 			center: {lng: -92.958210, lat: 45.363131}, //default
-			pointData: props.pointData,
-			lineData: props.lineData,
+			pointData: mapData.pointData,
+			lineData: mapData.lineData,
 			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
@@ -37,9 +38,16 @@ class MapDisplay extends Component {
 	}
 
 	componentWillReceiveProps(newProps) {
+		let mapData = this.state.dataVersion !== newProps.dataVersion ?
+            this.processData(newProps.trailInfoTiles) :
+			{
+				pointData: this.state.pointData,
+				lineData: this.state.lineData
+			};
+
 		this.setState({
-			pointData: newProps.pointData,
-			lineData: newProps.lineData,
+			pointData: mapData.pointData,
+			lineData: mapData.lineData,
 			dataVersion: newProps.dataVersion,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
@@ -48,8 +56,8 @@ class MapDisplay extends Component {
 	}
 
 	shouldComponentUpdate(newProps, newState) {
-		return newProps.dataVisible !== this.state.dataVisible || newProps.topoMap !== this.state.topoMap
-			|| newProps.dataVersion !== this.state.dataVersion || newState.center.lng !== this.state.center.lng ||
+		return newState.dataVisible !== this.state.dataVisible || newState.topoMap !== this.state.topoMap
+			|| newState.dataVersion !== this.state.dataVersion || newState.center.lng !== this.state.center.lng ||
 			newState.center.lat !== this.state.center.lat;
 	}
 
@@ -89,6 +97,39 @@ class MapDisplay extends Component {
 		if(this.map !== map) {
 			this.map = map; //update copy of pointer to map
 		}
+	};
+
+	//combine features from each tile to two geojson objects (points, and lines)
+	processData = (tiles) => {
+		let pointFeatures = [];
+		let lineFeatures = [];
+		for(let i = 0; i < tiles.length; i++) {
+			let tile = tiles[i];
+			if(tile.type === "FeatureCollection") {
+				pointFeatures.push.apply(pointFeatures, tile.pointData); //add tile point feature list to point data
+				if(tile.lineData) {
+					lineFeatures.push.apply(lineFeatures, tile.lineData) //add tile line feature list to line data
+				}
+			} else if (tile.type === "Feature") {
+				pointFeatures.push(tile.features);
+			}
+		}
+		return {
+			pointData: {
+                type: "geojson",
+                data: {
+                    type: "FeatureCollection",
+                    features: pointFeatures
+                }
+			},
+			lineData: {
+				type: "geojson",
+				data: {
+					type: "FeatureCollection",
+					features: lineFeatures
+				}
+			}
+		};
 	};
 
 	plotLines = () => {
@@ -230,7 +271,8 @@ class MapDisplay extends Component {
 	};
 
 	render() {
-        // console.log("Map rendered");
+		//TODO: render compass
+		//TODO: add search for location box
 		return(
 			<div id="map-container">
 				<Map
