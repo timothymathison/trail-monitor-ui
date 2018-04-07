@@ -26,7 +26,7 @@ class ControlPanel extends Component {
 	render() {
 		//TODO
 		return(
-			<div id="control-panel" className={"flexDefault" + (this.state.open ? "" : " hidden-panel")}>
+			<div id="control-panel" className={"flexDefault" + (this.state.open ? " open-panel" : " hidden-panel")}>
 				<Button id="open-close-panel" className={this.state.open ? "up" : "down"} handler={this.toggleOpen} symbol={Arrow}/>
 				<ControlToggle label="Map Type" type="select" value={this.props.topoMap} handler={this.props.mapTypeHandler}
 				               innerLabels={["Topo", "Dark"]} colors={["#2dcc70", "#414244"]}/>
