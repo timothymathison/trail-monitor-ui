@@ -19,7 +19,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "s3-upload": "aws s3 sync build/ s3://trailmonitorclientbeta",
+    "s3-upload": "aws s3 sync build/ s3://trailmonitorclient",
     "deploy": "npm run build && npm run s3-upload",
     "refresh-site": "aws cloudfront create-invalidation --distribution E38BIIZ81706OJ --paths '/*'"
   }
