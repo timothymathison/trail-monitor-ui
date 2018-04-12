@@ -113,11 +113,12 @@ class App extends Component {
 		console.log("Time: ", newTimeSpan, "selected");
 		if(this.state.cacheData) { //remove old timespan data from map and update status in cache
 			let cache = this.cache[this.timeSpan][this.zoomRange];
-			if(cache !== undefined) {
-                for(let i = 0; i < cache.tileIds.length; i++) {
-                    cache[cache.tileIds[i]].onMap = false;
-                }
-			}
+			this.setOnMapFlagsFalse(cache);
+			// if(cache !== undefined) {
+             //    for(let i = 0; i < cache.tileIds.length; i++) {
+             //        cache[cache.tileIds[i]].onMap = false;
+             //    }
+			// }
 		}
 		this.timeSpan = newTimeSpan;
 		this.setState({ trailInfoData: emptyTrailData }, this.updateMapData); //set empty map data and update for new time
@@ -203,8 +204,13 @@ class App extends Component {
             let startTime = now - toSubtract;
 
 			if(this.state.cacheData) {
-				this.zoomRange = Utility.rangeFromZoom(this.allZoomRanges, this.updateMapParams.zoom);
-
+				let newZoomRange = Utility.rangeFromZoom(this.allZoomRanges, this.updateMapParams.zoom);
+				if(newZoomRange !== this.zoomRange) { //zoom range has changed
+                    this.setOnMapFlagsFalse(this.cache[this.timeSpan][this.zoomRange]); //current data will be taken off map
+                    this.zoomRange = newZoomRange;
+                    this.setState({ trailInfoData: emptyTrailData }); //set empty data until new data is processed
+                    console.log("Updating map, zoomRange:", this.zoomRange);
+                }
 				//tiles that are currently within map window view
 				let tileIds = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
 					this.updateMapParams.right);
@@ -237,6 +243,15 @@ class App extends Component {
             //alert user that they need to zoom in before more data will be loaded
 			this.alert(alerts.warn, "Zoom in to load more data", 3000);
 		}
+	};
+
+	//set ".onMap" flags false for all tiles in cache
+	setOnMapFlagsFalse = (cache) => {
+        if(cache !== undefined) {
+            for(let i = 0; i < cache.tileIds.length; i++) {
+                cache[cache.tileIds[i]].onMap = false;
+            }
+        }
 	};
 
     //checks cache for all data corresponding to lookForTiles
