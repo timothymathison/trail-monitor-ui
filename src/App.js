@@ -59,8 +59,8 @@ class App extends Component {
 	isLoading = false; //used for time sensitive logic
 	updateMapParams = {}; //holds most recent position and zoom of map window
 	timeSpan = defaultTimeSpan; //currently selected view timespan
-	zoomRange = "2-6";
-	allZoomRanges = ["2-6"];
+	zoomRange = "4-6";
+	allZoomRanges = [];
 	cache = createEmptyCache(this.allZoomRanges); //holds data for each tile (to reduce number of server requests)
 
 	constructor(props) {
@@ -113,8 +113,10 @@ class App extends Component {
 		console.log("Time: ", newTimeSpan, "selected");
 		if(this.state.cacheData) { //remove old timespan data from map and update status in cache
 			let cache = this.cache[this.timeSpan][this.zoomRange];
-			for(let i = 0; i < cache.tileIds.length; i++) {
-				cache[cache.tileIds[i]].onMap = false;
+			if(cache !== undefined) {
+                for(let i = 0; i < cache.tileIds.length; i++) {
+                    cache[cache.tileIds[i]].onMap = false;
+                }
 			}
 		}
 		this.timeSpan = newTimeSpan;
@@ -201,6 +203,8 @@ class App extends Component {
             let startTime = now - toSubtract;
 
 			if(this.state.cacheData) {
+				this.zoomRange = Utility.rangeFromZoom(this.allZoomRanges, this.updateMapParams.zoom);
+
 				//tiles that are currently within map window view
 				let tileIds = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
 					this.updateMapParams.right);
@@ -241,7 +245,7 @@ class App extends Component {
     	if(cache === undefined) { //can't find cache
     		return {
     			tileIdsNeeded: lookForTiles, //need all tiles
-			    tile: [],
+			    tiles: [],
 			    featureCount: 0
 		    };
 	    }
@@ -316,7 +320,12 @@ class App extends Component {
                         featureCount: trailInfo.data.featureCount
                     }
                 } else if (fromServer) { //if from server update/process cache, otherwise place old + new
-                    displayTiles = this.processDataUpdate(timespan, this.zoomRange, trailInfo.data.tiles);
+                	if(trailInfo.data.availableZoomRanges.length !== this.allZoomRanges.length) { //update zoom range option and re-build cache
+						this.allZoomRanges = trailInfo.data.availableZoomRanges;
+						this.cache = createEmptyCache(this.allZoomRanges);
+						this.zoomRange = trailInfo.data.zoomRange;
+	                }
+                    displayTiles = this.processDataUpdate(timespan, trailInfo.data.zoomRange, trailInfo.data.tiles);
                 } else { //if from cache
                     displayTiles = {
                         tiles: this.state.trailInfoData.tiles.concat(trailInfo.data.tiles),
