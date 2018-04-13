@@ -1,15 +1,13 @@
 import React, {Component} from 'react';
 import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
-import Utility from './Utility.js';
 
 const Map = ReactMapboxGl({
 	accessToken: process.env.REACT_APP_MAPBOX_API_KEY
 });
 
 const distanceUnits = "mi"; //distance units used for scale ruler
-const dataColorPalette = ["#2dc937", "#99c140", "#e7b416", "#db7b2b", "#cc3232"]; //range of colors for data visualization
-//const dataColorPallette = ["rgba(33,102,172,0)", "rgb(103,169,207)", "rgb(209,229,240)", "rgb(253,219,199)", "rgb(239,138,98)", "rgb(178,24,43)"];
-
+const roughColorPalette = ["#2dc937", "#99c140", "#e7b416", "#db7b2b", "#cc3232"]; //range of colors for roughness data visualization
+const traffColorPalette = ["#BEE0CC", "#70C3D0", "#419DC5", "#316BA7", "#223B89"];
 
 const mapStyleDark = "mapbox://styles/mapbox/dark-v9";
 const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
@@ -17,11 +15,11 @@ const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
 class MapDisplay extends Component {
 	defaultZoom = [9];
 	transitionZoom = 10; //zoom at which heatmap transitions to points
-	valueMax = 10; //max trail point roughness value
+	valueMax = 10; //max trail point roughness value, data with roughness value greater than this will not appear differently
+	trafficMaxFactor = 10; //tunable: used for calculating what level of traffic will be considered maximum intensity
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
 	zoom = this.defaultZoom[0];
-	// center = {lng: -92.958210, lat: 45.363131}; //default
 
 	constructor(props) {
 		super(props);
@@ -34,7 +32,9 @@ class MapDisplay extends Component {
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
 			pointsVisible: props.pointsVisible,
-			topoMap: props.topoMap
+			roughnessVisible: props.roughnessVisible,
+			topoMap: props.topoMap,
+			trafficMax: 0
 		};
 	}
 
@@ -43,7 +43,8 @@ class MapDisplay extends Component {
             this.processData(newProps.trailInfoTiles) :
 			{
 				pointData: this.state.pointData,
-				lineData: this.state.lineData
+				lineData: this.state.lineData,
+				trafficMax: this.state.trafficMax
 			};
 
 		this.setState({
@@ -53,15 +54,17 @@ class MapDisplay extends Component {
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
 			pointsVisible: newProps.pointsVisible,
-			topoMap: newProps.topoMap
+			roughnessVisible: newProps.roughnessVisible,
+			topoMap: newProps.topoMap,
+			trafficMax: mapData.trafficMax
 		});
 	}
 
 	shouldComponentUpdate(newProps, newState) {
-		return newState.dataVisible !== this.state.dataVisible || newState.topoMap !== this.state.topoMap
-			|| newState.pointsVisible !== this.state.pointsVisible
-			|| newState.dataVersion !== this.state.dataVersion || newState.center.lng !== this.state.center.lng ||
-			newState.center.lat !== this.state.center.lat;
+		return newState.dataVisible !== this.state.dataVisible || newState.dataVersion !== this.state.dataVersion
+			|| newState.topoMap !== this.state.topoMap || newState.pointsVisible !== this.state.pointsVisible
+			|| newState.roughnessVisible !== this.state.roughnessVisible
+			|| newState.center.lng !== this.state.center.lng || newState.center.lat !== this.state.center.lat;
 	}
 
 	//handle and react to map events
@@ -77,12 +80,11 @@ class MapDisplay extends Component {
 			let right = map.getBounds()._ne.lng;
 
 			this.zoom = zoom;
-			// this.center = center;
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
 			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
 
-			console.log("Edges: ", top, bottom, left, right);
-			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
+			// console.log("Edges: ", top, bottom, left, right);
+			// console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
 			console.log("zoom: " + map.getZoom());
 		} else if(event.type === "render" && !this.hasRendered) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;
@@ -104,8 +106,10 @@ class MapDisplay extends Component {
 
 	//combine features from each tile to two geojson objects (points, and lines)
 	processData = (tiles) => {
-		let pointFeatures = [];
-		let lineFeatures = [];
+		let pointFeatures = []; //used for circle and heatmap layers
+		let lineFeatures = []; //used for line layer
+		let mostTraffic = 0; //keeps track of the greatest amount of traffic found out of all tiles
+		let trafficCoeff = 0;
 		for(let i = 0; i < tiles.length; i++) {
 			let tile = tiles[i];
 			if(tile.type === "FeatureCollection") {
@@ -115,6 +119,22 @@ class MapDisplay extends Component {
 				}
 			} else if (tile.type === "Feature") {
 				pointFeatures.push(tile.features);
+			}
+			if(tile.totalTraffic !== undefined && tile.totalTraffic > mostTraffic) {
+				mostTraffic = tile.totalTraffic;
+			}
+		}
+
+		//calculate traffic max display value
+		if(tiles.length > 0 && this.props.zoomRanges && this.props.zoomRanges.length > 0) {
+			//zoom depth effects average number of raw points that will be mapped to a single feature
+			let zoomDepth = this.props.zoomRanges.indexOf(tiles[0].zoomRange);
+			if(zoomDepth < 0) {
+				console.error("Tile processed which does not belong to a valid zoomRange");
+			} else {
+				//tune trafficMaxFactor to control how sensitive map is to traffic levels and total number of raw points
+				trafficCoeff = (this.trafficMaxFactor ** zoomDepth) / (100 ** zoomDepth);
+				//TODO: may need to also have linear factor for calculating traffic max value
 			}
 		}
 		return {
@@ -131,11 +151,12 @@ class MapDisplay extends Component {
 					type: "FeatureCollection",
 					features: lineFeatures
 				}
-			}
+			},
+			trafficMax: mostTraffic * trafficCoeff
 		};
 	};
 
-	plotLines = () => {
+	plotLines = (dataColorPalette, colorStops) => {
 		return (
 			<React.Fragment>
 				<Source id="lineData" type="feature" geoJsonSource={this.state.lineData}/>
@@ -151,12 +172,12 @@ class MapDisplay extends Component {
                            "line-color": [
                                "interpolate",
                                ["linear"],
-                               ["get", "value"],
-                               0, dataColorPalette[0],
-                               2.5, dataColorPalette[1],
-                               5, dataColorPalette[2],
-                               7.5, dataColorPalette[3],
-                               10, dataColorPalette[4]
+                               ["get", this.state.roughnessVisible ? "value" : "traffic"],
+                               colorStops[0], dataColorPalette[0],
+                               colorStops[1], dataColorPalette[1],
+                               colorStops[2], dataColorPalette[2],
+                               colorStops[3], dataColorPalette[3],
+                               colorStops[4], dataColorPalette[4]
                            ],
                            "line-opacity": [
                                "interpolate",
@@ -173,7 +194,7 @@ class MapDisplay extends Component {
 	};
 
 	//plots data as colored dots
-	plotPoints = () => {
+	plotPoints = (dataColorPalette, colorStops) => {
 		return (
 			<React.Fragment>
 				<Source id="pointData" type="feature" geoJsonSource={this.state.pointData}/>
@@ -189,12 +210,12 @@ class MapDisplay extends Component {
 						"circle-color": [
 							"interpolate",
 							["linear"],
-							["get", "value"],
-							0, dataColorPalette[0],
-							2.5, dataColorPalette[1],
-							5, dataColorPalette[2],
-							7.5, dataColorPalette[3],
-							10, dataColorPalette[4]
+							["get", this.state.roughnessVisible ? "value" : "traffic"],
+							colorStops[0], dataColorPalette[0],
+							colorStops[1], dataColorPalette[1],
+							colorStops[2], dataColorPalette[2],
+							colorStops[3], dataColorPalette[3],
+							colorStops[4], dataColorPalette[4]
 						],
 						"circle-opacity": [
 							"interpolate",
@@ -211,7 +232,7 @@ class MapDisplay extends Component {
 	};
 
 	//plots data as a generic heatmap (NOT lines)
-	plotHeatMap = () => {
+	plotHeatMap = (dataColorPalette, weightStops) => {
 		return (
 			<React.Fragment>
 				<Source id="heatData" geoJsonSource={this.state.pointData}/>
@@ -224,9 +245,9 @@ class MapDisplay extends Component {
 						"heatmap-weight": [
 							"interpolate",
 							["linear"],
-							["get", "value"],
-							0, 0.1,
-							this.valueMax, 1
+							["get", this.state.roughnessVisible ? "value" : "traffic"],
+							weightStops[0], 0.1,
+							weightStops[4], 1
 						],
 						// Increase the heatmap color weight weight by zoom level
 						// heatmap-intensity is a multiplier on top of heatmap-weight
@@ -276,6 +297,9 @@ class MapDisplay extends Component {
 	render() {
 		//TODO: render compass
 		//TODO: add search for location box
+		let dataColorPalette = this.state.roughnessVisible ? roughColorPalette : traffColorPalette;
+		let max = this.state.roughnessVisible ? this.valueMax : this.state.trafficMax;
+		let colorStops = [0, max * 0.25, max * 0.5, max * 0.75, max];
 		return(
 			<div id="map-container">
 				<Map
@@ -288,9 +312,9 @@ class MapDisplay extends Component {
 					onRender = {this.handleMapEvents}>
 					<ZoomControl/>
 					<ScaleControl position="bottom-right" measurement={distanceUnits} style={{ bottom: "20px" }}/>
-					{this.plotPoints()}
-					{this.plotHeatMap()}
-					{this.plotLines()}
+					{this.plotPoints(dataColorPalette, colorStops)}
+					{this.plotHeatMap(dataColorPalette, colorStops)}
+					{this.plotLines(dataColorPalette, colorStops)}
 				</Map>
 			</div>
 		);

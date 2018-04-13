@@ -55,7 +55,7 @@ class Utility {
 		try {
             for(let i = 0; i < zoomRanges.length; i++) {
                 let between = zoomRanges[i].split("-");
-                if(zoom >= parseInt(between[0]) && zoom < parseInt(between[1], 10)) {
+                if(zoom >= parseInt(between[0], 10) && zoom < parseInt(between[1], 10)) {
                     return zoomRanges[i];
                 }
             }

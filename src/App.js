@@ -68,6 +68,7 @@ class App extends Component {
 		this.state = {
 			displayAll: false,
 			displayPoints: false,
+			displayRoughness: true,
 			topoMap: false,
             //used for rendering, should be set when isLoading above is set
 			isLoading: false, //but may not always be the same due to asynchronous nature of "setState()"
@@ -99,8 +100,17 @@ class App extends Component {
 		}
 	};
 
+	//selects between displaying circle points versus lines on map at higher zoom levels
 	displayPointsHandler = (newValue) => {
 		this.setState({ displayPoints: newValue });
+	};
+
+	//selects between displaying roughness values versus traffic levels on map
+	displayRoughnessHandler = (newValue) => {
+		this.setState({ displayRoughness: newValue });
+		this.alert(alerts.success,
+			newValue ? "Showing Roughness Conditions" : "Showing Traffic Conditions",
+			5000);
 	};
 
 	//toggles whether data is cached
@@ -388,6 +398,7 @@ class App extends Component {
 	            <div id="App-body">
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
 		                          displayPoints={this.state.displayPoints} displayPointsHandler={this.displayPointsHandler}
+		                          displayRoughness={this.state.displayRoughness} displayRoughnessHandler={this.displayRoughnessHandler}
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
@@ -396,8 +407,8 @@ class App extends Component {
 		            <MapDisplay dataType="trailRoughness" dataVersion={this.state.dataVersion}
                                 trailInfoTiles={this.state.trailInfoData.tiles}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
-		                        pointsVisible={this.state.displayPoints}
-		                        updateHandler={this.updateMapHandler}
+		                        pointsVisible={this.state.displayPoints} roughnessVisible={this.state.displayRoughness}
+		                        updateHandler={this.updateMapHandler} zoomRanges={this.allZoomRanges}
 		            />
 	            </div>
 				<LoadIcon isLoading={this.state.isLoading}/>
