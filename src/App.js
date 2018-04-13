@@ -67,6 +67,7 @@ class App extends Component {
 		super(props);
 		this.state = {
 			displayAll: false,
+			displayPoints: false,
 			topoMap: false,
             //used for rendering, should be set when isLoading above is set
 			isLoading: false, //but may not always be the same due to asynchronous nature of "setState()"
@@ -96,6 +97,10 @@ class App extends Component {
 			this.setState({ displayAll: false });
 			this.alert(alerts.warn, "There is currently no data to display\nPlease change the map or view area", 5000);
 		}
+	};
+
+	displayPointsHandler = (newValue) => {
+		this.setState({ displayPoints: newValue });
 	};
 
 	//toggles whether data is cached
@@ -380,6 +385,7 @@ class App extends Component {
                 </header>
 	            <div id="App-body">
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
+		                          displayPoints={this.state.displayPoints} displayPointsHandler={this.displayPointsHandler}
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
@@ -388,6 +394,7 @@ class App extends Component {
 		            <MapDisplay dataType="trailRoughness" dataVersion={this.state.dataVersion}
                                 trailInfoTiles={this.state.trailInfoData.tiles}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
+		                        pointsVisible={this.state.displayPoints}
 		                        updateHandler={this.updateMapHandler}
 		            />
 	            </div>

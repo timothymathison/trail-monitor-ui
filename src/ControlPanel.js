@@ -32,6 +32,7 @@ class ControlPanel extends Component {
 				               innerLabels={["Topo", "Dark"]} colors={["#2dcc70", "#414244"]}/>
 				<ControlToggle label="Display Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
 				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
+				<ControlToggle label="Display Points" type="on-off" value={this.props.displayPoints} handler={this.props.displayPointsHandler}/>
 				<ControlToggle label="Roughness/Density" type="select" value={true} handler={ () => {} }
 				               innerLabels={["R", "D"]} colors={["#e84c3d", "#2a57ab"]}/>
 				<SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
