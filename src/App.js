@@ -59,7 +59,7 @@ class App extends Component {
 	isLoading = false; //used for time sensitive logic
 	updateMapParams = {}; //holds most recent position and zoom of map window
 	timeSpan = defaultTimeSpan; //currently selected view timespan
-	zoomRange = "4-6";
+	zoomRange = "6-10"; //default starting zoom is 9, zoom range will be replaced with value from lambda response
 	allZoomRanges = [];
 	cache = createEmptyCache(this.allZoomRanges); //holds data for each tile (to reduce number of server requests)
 
@@ -295,6 +295,8 @@ class App extends Component {
 
 	//update tiles in cache with data (features) returned from server, and return all features to be displayed
 	processDataUpdate = (timeSpan, zoomRange, tiles) => {
+		console.log("TimeSpan:", timeSpan);
+		console.log("ZoomRange:", zoomRange);
 		let cache = this.cache[timeSpan][zoomRange];
 		//for each tile if it's not in cache or present on map, add to cache
 		for(let i = 0; i < tiles.length; i++) {
@@ -340,7 +342,7 @@ class App extends Component {
                         featureCount: trailInfo.data.featureCount
                     }
                 } else if (fromServer) { //if from server update/process cache, otherwise place old + new
-                	if(trailInfo.data.availableZoomRanges.length !== this.allZoomRanges.length) { //update zoom range option and re-build cache
+                	if(!Utility.arrayElemEqual(trailInfo.data.availableZoomRanges, this.allZoomRanges)) { //update zoom range option and re-build cache
 						this.allZoomRanges = trailInfo.data.availableZoomRanges;
 						this.cache = createEmptyCache(this.allZoomRanges);
 						this.zoomRange = trailInfo.data.zoomRange;

@@ -55,7 +55,7 @@ class Utility {
 		try {
             for(let i = 0; i < zoomRanges.length; i++) {
                 let between = zoomRanges[i].split("-");
-                if(zoom >= parseInt(between[0]) && zoom < parseInt(between[1])) {
+                if(zoom >= parseInt(between[0]) && zoom < parseInt(between[1], 10)) {
                     return zoomRanges[i];
                 }
             }
@@ -81,6 +81,18 @@ class Utility {
 
 		return tileCoords;
 	};
+
+	//checks whether to arrays have same elements
+	static arrayElemEqual = (a, b) => {
+        if (a === b) return true;
+        if ( a === undefined || a == null || b === undefined || b == null) return false;
+        if (a.length !== b.length) return false;
+
+        for (let i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    };
 
 	//builds hard coded data
 	static buildPointData = () => {

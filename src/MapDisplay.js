@@ -146,7 +146,7 @@ class MapDisplay extends Component {
 				       paint={{
                            "line-width": {
                                'base': 2,
-                               'stops': [[12, 2], [20, 40]]
+                               'stops': [[10, 2], [20, 40]]
                            },
                            "line-color": [
                                "interpolate",
@@ -184,7 +184,7 @@ class MapDisplay extends Component {
 			        paint={{
 						"circle-radius": {
 							'base': 1.75,
-							'stops': [[12, 2], [20, 50]]
+							'stops': [[10, 1], [20, 20]] //how big points/dots appear at different zooms, will change linearly between zoom stops
 						},
 						"circle-color": [
 							"interpolate",
@@ -225,7 +225,7 @@ class MapDisplay extends Component {
 							"interpolate",
 							["linear"],
 							["get", "value"],
-							0, 0,
+							0, 0.1,
 							this.valueMax, 1
 						],
 						// Increase the heatmap color weight weight by zoom level
@@ -245,10 +245,10 @@ class MapDisplay extends Component {
 							["linear"],
 							["heatmap-density"],
 							0, dataColorPalette[0],
-							0.2, dataColorPalette[1],
-							0.4, dataColorPalette[2],
-							0.6, dataColorPalette[3],
-							0.8, dataColorPalette[4]
+							0.25, dataColorPalette[1],
+							0.5, dataColorPalette[2],
+							0.75, dataColorPalette[3],
+							1, dataColorPalette[4]
 						],
 						// Adjust the heatmap radius by zoom level
 						"heatmap-radius": [
@@ -256,7 +256,7 @@ class MapDisplay extends Component {
 							["linear"],
 							["zoom"],
 							0, 1,
-							this.transitionZoom, 5
+							this.transitionZoom, 2.5
 						],
 						// Transition from heatmap to circle layer by zoom level
 						"heatmap-opacity": [
