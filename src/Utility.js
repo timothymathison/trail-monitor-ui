@@ -5,8 +5,9 @@ const awsApiUrl = process.env.REACT_APP_AWS_API_URL;
 class Utility {
 
 	//request data from API - AWS cloud data service
-	static requestData = (top, left, right, bottom, startTime, dataHandler, timespan, done) => {
-		let url = awsApiUrl + "?lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom + "&start-time=" + startTime;
+	static requestData = (top, left, right, bottom, startTime, zoom, dataHandler, timespan, done) => {
+		let url = awsApiUrl + "?lim-top=" + top + "&lim-left=" + left + "&lim-right=" + right + "&lim-bot=" + bottom +
+			"&start-time=" + startTime + "&zoom=" + zoom;
 
 		let apiRequest = new XMLHttpRequest();
 		apiRequest.onreadystatechange = function () {
@@ -46,6 +47,22 @@ class Utility {
 		// setTimeout(function () {
 		// 	dataCallback("Data Fetched", Utility.buildPointData(), timespan)
 		// }, 1000);
+	};
+
+	//returns a corresponding zoom range from a single  zoom value
+	//zoom range expected in format like: "2-6" where the first number is lower bound (inclusive) and second number is the upper bound (exclusive)
+	static rangeFromZoom = (zoomRanges, zoom) => {
+		try {
+            for(let i = 0; i < zoomRanges.length; i++) {
+                let between = zoomRanges[i].split("-");
+                if(zoom >= parseInt(between[0]) && zoom < parseInt(between[1])) {
+                    return zoomRanges[i];
+                }
+            }
+            return undefined;
+		} catch (e) {
+            return undefined;
+        }
 	};
 
 	//Reduce-Coordinate-Dimension - Generates a unique linear value (tile identifier/coordinate) for each integer latitude/longitude combination

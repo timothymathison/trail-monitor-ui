@@ -16,7 +16,7 @@ const mapStyleTopo = "mapbox://styles/mapbox/outdoors-v10";
 
 class MapDisplay extends Component {
 	defaultZoom = [9];
-	transitionZoom = 9; //zoom at which heatmap transitions to points
+	transitionZoom = 10; //zoom at which heatmap transitions to points
 	valueMax = 10; //max trail point roughness value
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
@@ -33,6 +33,7 @@ class MapDisplay extends Component {
 			dataVersion: props.dataVersion,
 			dataType: props.dataType,
 			dataVisible: props.dataVisible,
+			pointsVisible: props.pointsVisible,
 			topoMap: props.topoMap
 		};
 	}
@@ -51,12 +52,14 @@ class MapDisplay extends Component {
 			dataVersion: newProps.dataVersion,
 			dataType: newProps.dataType,
 			dataVisible: newProps.dataVisible,
+			pointsVisible: newProps.pointsVisible,
 			topoMap: newProps.topoMap
 		});
 	}
 
 	shouldComponentUpdate(newProps, newState) {
 		return newState.dataVisible !== this.state.dataVisible || newState.topoMap !== this.state.topoMap
+			|| newState.pointsVisible !== this.state.pointsVisible
 			|| newState.dataVersion !== this.state.dataVersion || newState.center.lng !== this.state.center.lng ||
 			newState.center.lat !== this.state.center.lat;
 	}
@@ -79,7 +82,7 @@ class MapDisplay extends Component {
 			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
 
 			console.log("Edges: ", top, bottom, left, right);
-			console.log("tiles: " + Utility.listOfTiles(top, bottom, left, right));
+			console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
 			console.log("zoom: " + map.getZoom());
 		} else if(event.type === "render" && !this.hasRendered) { // first ever render triggers data request
 			let top = map.getBounds()._ne.lat;
@@ -138,7 +141,7 @@ class MapDisplay extends Component {
 				<Source id="lineData" type="feature" geoJsonSource={this.state.lineData}/>
 				<Layer id="lineLayer" sourceId="lineData" type="line"
                        layout={{
-                           "visibility": this.state.dataVisible ? "visible" : "none",
+                           "visibility": this.state.dataVisible && !this.state.pointsVisible ? "visible" : "none",
                        }}
 				       paint={{
                            "line-width": {
@@ -149,11 +152,11 @@ class MapDisplay extends Component {
                                "interpolate",
                                ["linear"],
                                ["get", "value"],
-                               1, dataColorPalette[0],
-                               3, dataColorPalette[1],
+                               0, dataColorPalette[0],
+                               2.5, dataColorPalette[1],
                                5, dataColorPalette[2],
-                               7, dataColorPalette[3],
-                               9, dataColorPalette[4]
+                               7.5, dataColorPalette[3],
+                               10, dataColorPalette[4]
                            ],
                            "line-opacity": [
                                "interpolate",
@@ -176,7 +179,7 @@ class MapDisplay extends Component {
 				<Source id="pointData" type="feature" geoJsonSource={this.state.pointData}/>
 				<Layer id="pointLayer" sourceId="pointData" type="circle" minzoom={this.transitionZoom - 1}
 			        layout={{
-				       "visibility": this.state.dataVisible ? "visible" : "none",
+				       "visibility": this.state.dataVisible && this.state.pointsVisible ? "visible" : "none",
 			        }}
 			        paint={{
 						"circle-radius": {
@@ -187,11 +190,11 @@ class MapDisplay extends Component {
 							"interpolate",
 							["linear"],
 							["get", "value"],
-							1, dataColorPalette[0],
-							3, dataColorPalette[1],
+							0, dataColorPalette[0],
+							2.5, dataColorPalette[1],
 							5, dataColorPalette[2],
-							7, dataColorPalette[3],
-							9, dataColorPalette[4]
+							7.5, dataColorPalette[3],
+							10, dataColorPalette[4]
 						],
 						"circle-opacity": [
 							"interpolate",
