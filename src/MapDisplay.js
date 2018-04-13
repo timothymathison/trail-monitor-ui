@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import ReactMapboxGl, { Layer, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
+import ReactMapboxGl, { Layer, RotationControl, ZoomControl, Source, ScaleControl } from "react-mapbox-gl";
 
 const Map = ReactMapboxGl({
 	accessToken: process.env.REACT_APP_MAPBOX_API_KEY
@@ -310,6 +310,7 @@ class MapDisplay extends Component {
 					onDragEnd = {this.handleMapEvents}
 					onZoomEnd = {this.handleMapEvents}
 					onRender = {this.handleMapEvents}>
+                    <RotationControl style={{ "margin-top": "20px" }}/>
 					<ZoomControl/>
 					<ScaleControl position="bottom-right" measurement={distanceUnits} style={{ bottom: "20px" }}/>
 					{this.plotPoints(dataColorPalette, colorStops)}
