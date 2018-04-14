@@ -14,6 +14,7 @@ h4 {
     flex-flow: column nowrap;
     justify-content: space-around;
     overflow: auto;
+    color: #dfe6e9;
 }
 
 #polaris-logo {
@@ -44,13 +45,12 @@ h4 {
 }
 
 #App-header {
-    background-color: #222;
+    background-color: #222222;
     box-sizing: border-box;
     /*min-height: 50px !important;*/
     height: 3.75em;
     width: 100%;
     padding: 0 10px;
-    color: #e4e4e4;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
@@ -70,7 +70,7 @@ h4 {
 }
 
 #control-panel {
-    background-color: #8a8b8d;/*gray;*/
+    background-color: #636e72; /* #8a8b8d;/*gray;*/
     width: 20%;
     min-width: 200px;
     flex-grow: 1;
@@ -115,11 +115,11 @@ h4 {
     margin: 10px auto;
     width: 150px;
     height: 30px;
-    background-color: #2a57ab;
-    color: #e4e4e4;
+    background-color: #0984e3; /*#2a57ab;*/
+    color: #dfe6e9;
     font-size: 1em;
     border-radius: 5px;
-    border: solid black 1px;
+    border: solid #2d3436 1px;
     text-align: center;
     cursor: pointer;
 }
@@ -137,7 +137,7 @@ h4 {
     /*margin: -75px 0 0 -100px;*/
     top: 50%;
     left: 50%;
-    color: #2a57ab;
+    color: #0984e3;
     display: flex;
     flex-flow: column;
     align-items: center;
@@ -155,7 +155,7 @@ h4 {
     box-sizing: border-box;
     padding: 1em 0;
     text-align: center;
-    color: #e4e4e4;
+    color: #dfe6e9;
     margin: 0 0 0 -25%;
     border: 2px solid;
     border-radius: 5px;
@@ -190,16 +190,15 @@ h4 {
 }
 
 div.Select-control {
-    background-color: #5d5d5d !important;
-    color: #e4e4e4 !important;
+    background-color: #2d3436 !important;
     border-radius: 5px;
-    border-color: #2a57ab !important;
+    border-color: #3c9aff !important;
 }
 
 .Select-value-label, div.Select-option, .Select-menu-outer {
-    color: #e4e4e4 !important;
-    background-color: #5d5d5d !important;
-    border-color: #2a57ab !important;
+    color: #dfe6e9 !important;
+    background-color: #2d3436 !important;
+    border-color: #3c9aff !important;
 }
 
 .Select-menu-outer div:hover {

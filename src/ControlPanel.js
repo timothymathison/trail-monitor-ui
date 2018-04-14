@@ -29,12 +29,12 @@ class ControlPanel extends Component {
 			<div id="control-panel" className={"flexDefault" + (this.state.open ? " open-panel" : " hidden-panel")}>
 				<Button id="open-close-panel" className={this.state.open ? "up" : "down"} handler={this.toggleOpen} symbol={Arrow}/>
 				<ControlToggle label="Map Type" type="select" value={this.props.topoMap} handler={this.props.mapTypeHandler}
-				               innerLabels={["Topo", "Dark"]} colors={["#2dcc70", "#414244"]}/>
+				               innerLabels={["Topo", "Dark"]} colors={["#00b894", "#2d3436"]}/>
 				<ControlToggle label="Display Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
 				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
 				<ControlToggle label="Display Points" type="on-off" value={this.props.displayPoints} handler={this.props.displayPointsHandler}/>
 				<ControlToggle label="Rough or Traffic" type="select" value={this.props.displayRoughness} handler={this.props.displayRoughnessHandler}
-				               innerLabels={["R", "T"]} colors={["#e84c3d", "#2a57ab"]}/>
+				               innerLabels={["R", "T"]} colors={["#d63031", "#0984e3"]}/>
 				<SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
 				{/*TODO: Add map legend*/}
 				<Button handler={this.props.refreshHandler} text="Refresh"/>

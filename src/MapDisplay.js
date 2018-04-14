@@ -40,13 +40,12 @@ class MapDisplay extends Component {
 
 	componentWillReceiveProps(newProps) {
 		let mapData = this.state.dataVersion !== newProps.dataVersion ?
-            this.processData(newProps.trailInfoTiles) :
+            this.processData(newProps.trailInfoTiles, newProps.zoomRanges) :
 			{
 				pointData: this.state.pointData,
 				lineData: this.state.lineData,
 				trafficMax: this.state.trafficMax
 			};
-
 		this.setState({
 			pointData: mapData.pointData,
 			lineData: mapData.lineData,
@@ -105,7 +104,7 @@ class MapDisplay extends Component {
 	};
 
 	//combine features from each tile to two geojson objects (points, and lines)
-	processData = (tiles) => {
+	processData = (tiles, zoomRanges) => {
 		let pointFeatures = []; //used for circle and heatmap layers
 		let lineFeatures = []; //used for line layer
 		let mostTraffic = 0; //keeps track of the greatest amount of traffic found out of all tiles
@@ -123,12 +122,13 @@ class MapDisplay extends Component {
 			if(tile.totalTraffic !== undefined && tile.totalTraffic > mostTraffic) {
 				mostTraffic = tile.totalTraffic;
 			}
+			// console.log(mostTraffic);
 		}
 
 		//calculate traffic max display value
-		if(tiles.length > 0 && this.props.zoomRanges && this.props.zoomRanges.length > 0) {
+		if(tiles.length > 0 && zoomRanges && zoomRanges.length > 0) {
 			//zoom depth effects average number of raw points that will be mapped to a single feature
-			let zoomDepth = this.props.zoomRanges.indexOf(tiles[0].zoomRange);
+			let zoomDepth = zoomRanges.indexOf(tiles[0].zoomRange);
 			if(zoomDepth < 0) {
 				console.error("Tile processed which does not belong to a valid zoomRange");
 			} else {
@@ -310,7 +310,7 @@ class MapDisplay extends Component {
 					onDragEnd = {this.handleMapEvents}
 					onZoomEnd = {this.handleMapEvents}
 					onRender = {this.handleMapEvents}>
-                    <RotationControl style={{ "margin-top": "20px" }}/>
+                    <RotationControl style={{ marginTop: "20px" }}/>
 					<ZoomControl/>
 					<ScaleControl position="bottom-right" measurement={distanceUnits} style={{ bottom: "20px" }}/>
 					{this.plotPoints(dataColorPalette, colorStops)}

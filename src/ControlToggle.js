@@ -31,8 +31,17 @@ class ControlToggle extends Component {
 				onToggle={ this.handler }
 				colors={{
 					active: {
-						base: '#2a57ab'//'#365ba5'
-					}
+						base: '#0984e3'//'#365ba5'
+					},
+					inactive: {
+						base: '#2d3436'
+					},
+                    activeThumb: {
+                        base: "#dfe6e9"
+                    },
+                    inactiveThumb : {
+                        base: "#dfe6e9"
+                    }
 				}}
 			/>
 		)
@@ -41,8 +50,8 @@ class ControlToggle extends Component {
 	renderSelect = () => {
 		return (
 			<ToggleButton
-				activeLabel={<div className="veryBold">{this.props.innerLabels[0]}</div>}
-				inactiveLabel={<div className="veryBold">{this.props.innerLabels[1]}</div>}
+				activeLabel={<div style={{color: "#dfe6e9"}} className="veryBold">{this.props.innerLabels[0]}</div>}
+				inactiveLabel={<div style={{color: "#dfe6e9"}} className="veryBold">{this.props.innerLabels[1]}</div>}
 				value={ this.state.value }
 				onToggle={ this.handler }
 				colors={{
@@ -51,6 +60,12 @@ class ControlToggle extends Component {
 					},
 					inactive: {
 						base: this.props.colors[1]
+					},
+					activeThumb: {
+						base: "#dfe6e9"
+					},
+					inactiveThumb : {
+						base: "#dfe6e9"
 					}
 				}}
 			/>
@@ -70,14 +85,14 @@ class ControlToggle extends Component {
 class Check extends Component {
 	check = "\u2714";
 	render() {
-		return <div className="veryBold">{this.check}</div>
+		return <div style={{color: "#dfe6e9"}} className="veryBold">{this.check}</div>
 	}
 }
 
 class X extends Component {
 	x = "X";
 	render() {
-		return <div className="veryBold">{this.x}</div>
+		return <div style={{color: "#b2bec3"}} className="veryBold">{this.x}</div>
 	}
 }
 
