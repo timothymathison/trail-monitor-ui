@@ -295,7 +295,8 @@ class MapDisplay extends Component {
 	};
 
 	render() {
-		//TODO: render compass
+		//TODO: add full screen button
+		//TODO: add legend
 		//TODO: add search for location box
 		let dataColorPalette = this.state.roughnessVisible ? roughColorPalette : traffColorPalette;
 		let max = this.state.roughnessVisible ? this.valueMax : this.state.trafficMax;

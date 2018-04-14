@@ -30,12 +30,13 @@ class ControlPanel extends Component {
 				<Button id="open-close-panel" className={this.state.open ? "up" : "down"} handler={this.toggleOpen} symbol={Arrow}/>
 				<ControlToggle label="Map Type" type="select" value={this.props.topoMap} handler={this.props.mapTypeHandler}
 				               innerLabels={["Topo", "Dark"]} colors={["#00b894", "#2d3436"]}/>
-				<ControlToggle label="Display Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
+				<ControlToggle label="Show All Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
 				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
-				<ControlToggle label="Display Points" type="on-off" value={this.props.displayPoints} handler={this.props.displayPointsHandler}/>
-				<ControlToggle label="Rough or Traffic" type="select" value={this.props.displayRoughness} handler={this.props.displayRoughnessHandler}
-				               innerLabels={["R", "T"]} colors={["#d63031", "#0984e3"]}/>
-				<SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
+                <SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
+				<ControlToggle label="Display Type" type="select" value={this.props.displayPoints} handler={this.props.displayPointsHandler}
+				               innerLabels={["point", "line"]} colors={["#d63031", "#0984e3"]}/>
+				<ControlToggle label="Data Source" type="select" value={this.props.displayRoughness} handler={this.props.displayRoughnessHandler}
+				               innerLabels={["rough", "traffic"]} colors={["#cc3232", "#223B89"]}/>
 				{/*TODO: Add map legend*/}
 				<Button handler={this.props.refreshHandler} text="Refresh"/>
 				<AlertBox alertId={this.props.alert.id} type={this.props.alert.type} message={this.props.alert.message} timeout={this.props.alert.timeout}/>
