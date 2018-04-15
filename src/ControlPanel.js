@@ -23,6 +23,14 @@ class ControlPanel extends Component {
 		}
 	};
 
+	//attempt at fixing issue with iphone launching keyboard when select clicked
+    // componentDidMount() {
+    // 	let input = document.getElementById("control-panel").getElementsByClassName("select")[0].getElementsByTagName("input")[0];
+    // 	input.readonly = true;
+    // 	// input.disabled = true;
+    //     console.log(input);
+    // }
+
 	render() {
 		return(
 			<div id="control-panel" className={"flexDefault" + (this.state.open ? " open-panel" : " hidden-panel")}>

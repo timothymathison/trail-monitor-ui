@@ -18,6 +18,7 @@ class SelectOptions extends Component {
 	};
 
 	renderSelect = () => {
+		//TODO: use non-drop-down style select
 		return(
 			<Select name="Time Span" className="dark"
 			        value={this.state.selected && this.state.selected.value}
