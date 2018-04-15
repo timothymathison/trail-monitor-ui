@@ -24,7 +24,6 @@ class ControlPanel extends Component {
 	};
 
 	render() {
-		//TODO
 		return(
 			<div id="control-panel" className={"flexDefault" + (this.state.open ? " open-panel" : " hidden-panel")}>
 				<Button id="open-close-panel" className={this.state.open ? "up" : "down"} handler={this.toggleOpen} symbol={Arrow}/>
@@ -37,7 +36,6 @@ class ControlPanel extends Component {
 				               innerLabels={["point", "line"]} colors={["#d63031", "#0984e3"]}/>
 				<ControlToggle label="Data Source" type="select" value={this.props.displayRoughness} handler={this.props.displayRoughnessHandler}
 				               innerLabels={["rough", "traffic"]} colors={["#cc3232", "#223B89"]}/>
-				{/*TODO: Add map legend*/}
 				<Button handler={this.props.refreshHandler} text="Refresh"/>
 				<AlertBox alertId={this.props.alert.id} type={this.props.alert.type} message={this.props.alert.message} timeout={this.props.alert.timeout}/>
 			</div>

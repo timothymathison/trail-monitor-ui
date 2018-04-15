@@ -129,11 +129,6 @@ class App extends Component {
 		if(this.state.cacheData) { //remove old timespan data from map and update status in cache
 			let cache = this.cache[this.timeSpan][this.zoomRange];
 			this.setOnMapFlagsFalse(cache);
-			// if(cache !== undefined) {
-             //    for(let i = 0; i < cache.tileIds.length; i++) {
-             //        cache[cache.tileIds[i]].onMap = false;
-             //    }
-			// }
 		}
 		this.timeSpan = newTimeSpan;
 		this.setState({ trailInfoData: emptyTrailData }, this.updateMapData); //set empty map data and update for new time
@@ -161,8 +156,6 @@ class App extends Component {
 
 	//use this function to return current loading status of map data
 	loading = () => {
-		// let isLoading = this.isLoading;
-		// let isInTransition = this.isLoading !== this.state.isLoading;
 		return this.isLoading;
 	};
 
