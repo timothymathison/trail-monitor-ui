@@ -89,6 +89,27 @@ h4 {
     color: black;
 }
 
+.legend {
+    position: absolute;
+    margin-top: 10px;
+    margin-left: 10px;
+    height: 60%;
+    z-index: 12;
+}
+
+.legend div {
+    width: 0.75em;
+    height: 18%;
+    margin: 0 auto;
+}
+
+.legend p {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-align: center;
+}
+
 .hidden {
     visibility: hidden;
     z-index: 0;

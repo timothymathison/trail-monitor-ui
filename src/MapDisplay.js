@@ -294,15 +294,32 @@ class MapDisplay extends Component {
 		)
 	};
 
+	renderLegend = (dataColorPalette, colorStops) => {
+		let startColor = this.state.roughnessVisible ? dataColorPalette[0] : dataColorPalette[1];
+		let endColor = this.state.roughnessVisible ? dataColorPalette[4] : dataColorPalette[3];
+		return (
+			<div className="legend">
+				<p style={{color: startColor}}>{colorStops[0]}</p>
+				<div style={{backgroundColor: dataColorPalette[0]}}></div>
+                <div style={{backgroundColor: dataColorPalette[1]}}></div>
+                <div style={{backgroundColor: dataColorPalette[2]}}></div>
+                <div style={{backgroundColor: dataColorPalette[3]}}></div>
+                <div style={{backgroundColor: dataColorPalette[4]}}></div>
+				<p style={{color: endColor}}>{Math.round(colorStops[4])}</p>
+			</div>
+		);
+	};
+
 	render() {
 		//TODO: add full screen button
-		//TODO: add legend
 		//TODO: add search for location box
+		//TODO: add tooltip when hovering over a point
 		let dataColorPalette = this.state.roughnessVisible ? roughColorPalette : traffColorPalette;
 		let max = this.state.roughnessVisible ? this.valueMax : this.state.trafficMax;
 		let colorStops = [0, max * 0.25, max * 0.5, max * 0.75, max];
 		return(
 			<div id="map-container">
+                {this.renderLegend(dataColorPalette, colorStops)}
 				<Map
 					style = {this.state.topoMap ? mapStyleTopo : mapStyleDark}
 					containerStyle = {{ height: "100%", width: "100%" }}
