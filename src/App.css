@@ -70,12 +70,11 @@ h4 {
 }
 
 #control-panel {
-    background-color: #636e72; /* #8a8b8d;/*gray;*/
+    background-color: #636e72; /* #8a8b8d;*/
     width: 20%;
     min-width: 200px;
     flex-grow: 1;
     z-index: 10;
-    /*TODO: fix control panel not filling height of page*/
 }
 
 #open-close-panel {
@@ -83,10 +82,11 @@ h4 {
 }
 
 #map-container {
-    background-color: #e4e4e4;
+    background-color: #b2bec3;
     width: 80%;
     flex-grow: 4;
     z-index: 9;
+    color: black;
 }
 
 .hidden {
@@ -108,11 +108,12 @@ h4 {
     padding: 0 0.75em;
     min-width: 200px;
     box-sizing: border-box;
-    z-index: 11;
+    /*z-index: 11;*/
 }
 
 .button {
     margin: 10px auto;
+    padding: 0 0.75em;
     width: 150px;
     height: 30px;
     background-color: #0984e3; /*#2a57ab;*/
@@ -206,18 +207,19 @@ div.Select-control {
 }
 
 
-@media only screen and (max-width: 999px) and (max-height: 700px) {
+@media only screen and (max-width: 999px) {
     #polaris-logo {
         width: 90px;
         height: 15px;
     }
 
     #control-panel {
+        background-color: rgba(99, 110, 114, 0.92);
         position: fixed;
         width: 100%;
         padding-top: 30px;
-        transition: top 0.5s linear;
         box-sizing: border-box;
+        transition: all 0.5s linear;
     }
 
     #open-close-panel {
@@ -225,18 +227,20 @@ div.Select-control {
         position: fixed;
         top: 60px;
         left: 50%;
-        margin: 0 0 0 -50px;
+        margin: 0 0 0 -35px;
         z-index: 11;
         width: 70px;
         border-radius: 0 0 25px 25px;
     }
 
     .hidden-panel {
-        top: -60% !important;
+        top: -70% !important;
+        /*bottom: 100% !important;*/
     }
 
     .open-panel {
         top: 60px !important;
+        /*bottom: calc(80% - 60px) !important;*/
     }
 
     .alert-box {
