@@ -80,7 +80,8 @@ class MapDisplay extends Component {
 
 			this.zoom = zoom;
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom); //check if map data needs to be updated
+			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom, !this.hasRendered); //check if map data needs to be updated
+			this.hasRendered = true;
 
 			// console.log("Edges: ", top, bottom, left, right);
 			// console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
@@ -90,12 +91,13 @@ class MapDisplay extends Component {
 			let bottom = map.getBounds()._sw.lat;
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
-			this.hasRendered = true;
 
 			navigator.geolocation.getCurrentPosition((pos) => { //center map at location
+				//triggers a scroll event causing this handler to immediately be invoked again
 				this.setState({ center: {lng: pos.coords.longitude, lat: pos.coords.latitude} });
 			}, () => { //unable to get current location, go ahead and load data
-                this.props.updateHandler(top, bottom, left, right, map.getZoom());
+				this.hasRendered = true;
+                this.props.updateHandler(top, bottom, left, right, map.getZoom(), true);
 			})
 		}
 		if(this.map !== map) {

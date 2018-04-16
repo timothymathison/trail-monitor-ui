@@ -90,27 +90,37 @@ class App extends Component {
     };
 
 	//turns all data display on/off
-	//TODO: if map was scrolled while off, load data for current area
 	displayAllHandler = (newValue) => {
-		if(this.state.trailInfoData.featureCount > 0) {
-			this.setState({ displayAll: newValue });
-		} else {
-			this.setState({ displayAll: false });
-			this.alert(alerts.warn, "There is currently no data to display\nPlease change the map or view area", 5000);
-		}
+        this.setState({ displayAll: newValue });
+        if(newValue) {
+            this.updateMapData((success, msg, noData) => { //update map in case it was scrolled or zoomed while display was off
+                if (success && noData) {
+                    this.alert(alerts.warn, "There is currently no data to display\nPlease change the time span or view area", 5000);
+                }
+            });
+        }
 	};
 
 	//selects between displaying circle points versus lines on map at higher zoom levels
 	displayPointsHandler = (newValue) => {
 		this.setState({ displayPoints: newValue });
+		if(!this.state.displayAll) {
+			this.alert(alerts.warn, "Show data is currently turned off", 5000);
+		} else if(this.zoomRange !== this.allZoomRanges[this.allZoomRanges.length - 1]) {
+			this.alert(alerts.warn, "Zoom in to see detailed data", 5000);
+		}
 	};
 
 	//selects between displaying roughness values versus traffic levels on map
 	displayRoughnessHandler = (newValue) => {
 		this.setState({ displayRoughness: newValue });
-		this.alert(alerts.success,
-			newValue ? "Showing Roughness Conditions" : "Showing Traffic Conditions",
-			5000);
+		if(this.state.displayAll) {
+            this.alert(alerts.success,
+                newValue ? "Showing Roughness Conditions" : "Showing Traffic Conditions",
+                5000);
+        } else {
+			this.alert(alerts.warn, "Show data is currently turned off", 5000);
+		}
 	};
 
 	//toggles whether data is cached
@@ -173,7 +183,7 @@ class App extends Component {
 
 	//set params for the data that needs to be displayed on map
 	//TODO: don't load data if displayAll is off
-	updateMapHandler = (top, bot, left, right, zoom) => {
+	updateMapHandler = (top, bot, left, right, zoom, forceUpdate = false) => {
 		if(this.updateMapParams.zoom !== zoom || this.updateMapParams.top !== top || this.updateMapParams.bot !== bot
 			|| this.updateMapParams.left !== left || this.updateMapParams.right !== right) {
 			this.updateMapParams = {
@@ -183,18 +193,20 @@ class App extends Component {
 				left: left,
 				right: right
 			};
-			if(!this.loading()) {
-				this.updateMapData();
-			} else if(!this.updateQueued){ //if already loading, queue update function to wait before updating again
-				setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
-				this.updateQueued = true;
-			}
+			if(this.state.displayAll || forceUpdate) { //if display data is toggled on, update map
+                if (!this.loading()) {
+                    this.updateMapData();
+                } else if (!this.updateQueued) { //if already loading, queue update function to wait before updating again
+                    setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
+                    this.updateQueued = true;
+                }
+            }
 		}
 	};
 
 	//check if data is present for all of current view window; if not, request new data from cloud service
     //done -> a function to call when done
-	updateMapData = (done) => {
+	updateMapData = (done = () => {}) => {
 		if(this.loading()) { //if already loading, keep waiting before updating again
 			setTimeout(this.updateMapData, 500, done);
 		} else if(this.updateMapParams.zoom >= 4) { //update map if zoom is great enough to limit number of tiles
@@ -241,6 +253,9 @@ class App extends Component {
 							featureCount: cacheResult.featureCount
                         }
 					}, this.timeSpan, needData ? () => {} : done, false);
+				} else if(!needData) { //if there is no data to add to map and no data needed
+					done(true, "Map is up to date", this.state.trailInfoData.featureCount === 0);
+					this.setState({ displayAll: this.state.trailInfoData.featureCount > 0});
 				}
 			} else { //data not cached, always request from data service
 				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
@@ -362,7 +377,7 @@ class App extends Component {
                     dataVersion: this.state.dataVersion + 1,
                     displayAll: displayTiles.featureCount > 0
                 });
-                call(true, msg);
+                call(true, msg, displayTiles.featureCount === 0);
             } catch (e) {
                 this.setState({ displayAll: false });
                 console.error("Error when trying to process new data:", e);
