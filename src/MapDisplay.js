@@ -19,6 +19,7 @@ class MapDisplay extends Component {
 	trafficMaxFactor = 10; //tunable: used for calculating what level of traffic will be considered maximum intensity
 	map; //keep a copy of a pointer to map around in case it's needed, mostly to get info about the map object
 	hasRendered = false;
+	dataRequested = false;
 	zoom = this.defaultZoom[0];
 
 	constructor(props) {
@@ -80,8 +81,8 @@ class MapDisplay extends Component {
 
 			this.zoom = zoom;
 			this.setState({ center: center }); //update center so later re-renders don't re-position map
-			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom, !this.hasRendered); //check if map data needs to be updated
-			this.hasRendered = true;
+			this.props.updateHandler(Math.floor(top), Math.floor(bottom), Math.floor(left), Math.floor(right), zoom, !this.dataRequested); //check if map data needs to be updated
+			this.dataRequested = true;
 
 			// console.log("Edges: ", top, bottom, left, right);
 			// console.log("# of tiles: " + Utility.listOfTiles(top, bottom, left, right).length);
@@ -91,12 +92,12 @@ class MapDisplay extends Component {
 			let bottom = map.getBounds()._sw.lat;
 			let left = map.getBounds()._sw.lng;
 			let right = map.getBounds()._ne.lng;
-
+			this.hasRendered = true;
 			navigator.geolocation.getCurrentPosition((pos) => { //center map at location
 				//triggers a scroll event causing this handler to immediately be invoked again
 				this.setState({ center: {lng: pos.coords.longitude, lat: pos.coords.latitude} });
 			}, () => { //unable to get current location, go ahead and load data
-				this.hasRendered = true;
+				this.dataRequested = true;
                 this.props.updateHandler(top, bottom, left, right, map.getZoom(), true);
 			})
 		}
