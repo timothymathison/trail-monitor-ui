@@ -182,7 +182,6 @@ class App extends Component {
     };
 
 	//set params for the data that needs to be displayed on map
-	//TODO: don't load data if displayAll is off
 	updateMapHandler = (top, bot, left, right, zoom, forceUpdate = false) => {
 		if(this.updateMapParams.zoom !== zoom || this.updateMapParams.top !== top || this.updateMapParams.bot !== bot
 			|| this.updateMapParams.left !== left || this.updateMapParams.right !== right) {
