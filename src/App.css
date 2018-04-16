@@ -154,18 +154,20 @@ h4 {
 .loading {
     position: fixed;
     z-index: 100000;
-    /*width: 200px;*/
-    /*height: 150px;*/
-    /*margin: -75px 0 0 -100px;*/
+    width: 6em;
+    margin-left: -3em;
     top: 50%;
     left: 50%;
     color: #0984e3;
     display: flex;
     flex-flow: column;
     align-items: center;
-    text-align: center;
     font-weight: bold;
     font-size: 1.5em;
+}
+
+.loading > div {
+    margin-left: -35px;
 }
 
 .alert-box {
@@ -270,9 +272,5 @@ div.Select-control {
         left: 0;
         width: 100%;
         margin: 0;
-    }
-
-    .loading {
-        left: 45%;
     }
 }
