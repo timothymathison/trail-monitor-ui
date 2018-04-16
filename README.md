@@ -62,3 +62,4 @@ Note 2: See references below for more information about Amazon S3
 - [Deploying React App to Amazon S3](https://medium.com/@omgwtfmarc/deploying-create-react-app-to-s3-or-cloudfront-48dae4ce0af)
 - [Installing AWS CLI (Command Line Tool)](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 - [CLI Documentation](https://aws.amazon.com/cli/)
+- [Visualization Color Palettes and More](https://blog.graphiq.com/finding-the-right-color-palettes-for-data-visualizations-fcd4e707a283)

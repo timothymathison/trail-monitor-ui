@@ -9,46 +9,43 @@ import ControlPanel from './ControlPanel.js';
 import MapDisplay from './MapDisplay.js';
 import LoadIcon from './LoadIcon'
 
+//must be same as list of millisecTimes above
+const timeOptions = [
+    {value: "day", label: "Past 24 Hours"},
+    {value: "week", label: "Past 7 Days"},
+    {value: "month", label: "Past 30 Days"},
+    {value: "year", label: "Past Year"},
+    {value: "all", label: "All Time"}
+];
+const defaultTimeSpan = timeOptions[4].value;
+
 const millisecTimes = {
 	day: 86400000, //24 hours
 	week: 604800000, //7 days
 	month: 2592000000, //30 days
-	year: 31536000000 //365 days
+	year: 31536000000, //365 days
+	all: new Date().valueOf() // all time until now
+};
+
+const createEmptyCache = (zoomRanges) => {
+    let cache = {};
+    for( let t = 0; t < timeOptions.length; t++) {
+        let timeOption = timeOptions[t].value;
+        cache[timeOption] = {}; //create cache object for each time-span option
+        if(zoomRanges && zoomRanges.length > 0) {
+            for(let i = 0; i < zoomRanges.length; i++) {
+                cache[timeOption][zoomRanges[i]] = { tileIds: [] }; //create cache object for each zoomRange
+            }
+        } else {
+            cache[timeOption].tileIds = [];
+        }
+    }
+    return cache;
 };
 
 const emptyTrailData = {
-	featureCount: 0,
-	tiles: []
-};
-
-const timeOptions = [
-	{value: "pastDay", label: "Past 24 Hours"},
-	{value: "pastWeek", label: "Past 7 Days"},
-	{value: "pastMonth", label: "Past 30 Days"},
-	{value: "pastYear", label: "Past Year"},
-	{value: "allTime", label: "All Time"}
-];
-const defaultTimeSpan = timeOptions[4].value;
-
-//cache names MUST BE SAME as time option values above
-const emptyCache = () => {
-	return {
-        pastDay: {
-            tileIds: []
-        },
-        pastWeek: {
-            tileIds: []
-        },
-        pastMonth: {
-            tileIds: []
-        },
-        pastYear: {
-            tileIds: []
-        },
-        allTime: {
-            tileIds: []
-        }
-    };
+    featureCount: 0,
+    tiles: []
 };
 
 const alerts = {
@@ -61,14 +58,17 @@ class App extends Component {
 	updateQueued = false; //used for time sensitive logic
 	isLoading = false; //used for time sensitive logic
 	updateMapParams = {}; //holds most recent position and zoom of map window
-	tileIdOfLoading = []; //tile id's that are still being fetched from server
 	timeSpan = defaultTimeSpan; //currently selected view timespan
-	cache = emptyCache(); //holds data for each tile (to reduce number of server requests)
+	zoomRange = "6-10"; //default starting zoom is 9, zoom range will be replaced with value from lambda response
+	allZoomRanges = [];
+	cache = createEmptyCache(this.allZoomRanges); //holds data for each tile (to reduce number of server requests)
 
 	constructor(props) {
 		super(props);
 		this.state = {
 			displayAll: false,
+			displayPoints: false,
+			displayRoughness: true,
 			topoMap: false,
             //used for rendering, should be set when isLoading above is set
 			isLoading: false, //but may not always be the same due to asynchronous nature of "setState()"
@@ -90,22 +90,45 @@ class App extends Component {
     };
 
 	//turns all data display on/off
-	//TODO: if map was scrolled while off, load data for current area
 	displayAllHandler = (newValue) => {
-		if(this.state.trailInfoData.featureCount > 0) {
-			this.setState({ displayAll: newValue });
-		} else {
-			this.setState({ displayAll: false });
-			this.alert(alerts.warn, "There is currently no data to display\nPlease change the map or view area", 5000);
+        this.setState({ displayAll: newValue });
+        if(newValue) {
+            this.updateMapData((success, msg, noData) => { //update map in case it was scrolled or zoomed while display was off
+                if (success && noData) {
+                    this.alert(alerts.warn, "There is currently no data to display\nPlease change the time span or view area", 5000);
+                }
+            });
+        }
+	};
+
+	//selects between displaying circle points versus lines on map at higher zoom levels
+	displayPointsHandler = (newValue) => {
+		this.setState({ displayPoints: newValue });
+		if(!this.state.displayAll) {
+			this.alert(alerts.warn, "Show data is currently turned off", 5000);
+		} else if(this.zoomRange !== this.allZoomRanges[this.allZoomRanges.length - 1]) {
+			this.alert(alerts.warn, "Zoom in to see detailed data", 5000);
+		}
+	};
+
+	//selects between displaying roughness values versus traffic levels on map
+	displayRoughnessHandler = (newValue) => {
+		this.setState({ displayRoughness: newValue });
+		if(this.state.displayAll) {
+            this.alert(alerts.success,
+                newValue ? "Showing Roughness Conditions" : "Showing Traffic Conditions",
+                5000);
+        } else {
+			this.alert(alerts.warn, "Show data is currently turned off", 5000);
 		}
 	};
 
 	//toggles whether data is cached
 	cacheDataHandler = (newValue) => {
 		if(newValue) { //if data should be cached, add current map data to cache
-			this.processDataUpdate(this.timeSpan, this.state.trailInfoData.tiles)
+			this.processDataUpdate(this.timeSpan, this.zoomRange, this.state.trailInfoData.tiles)
 		} else {
-			this.cache = emptyCache(); //empty the cache
+			this.cache = createEmptyCache(this.allZoomRanges); //empty the cache
 		}
 		this.setState({ cacheData: newValue });
 	};
@@ -114,10 +137,8 @@ class App extends Component {
 	timeChangeHandler = (newTimeSpan) => {
 		console.log("Time: ", newTimeSpan, "selected");
 		if(this.state.cacheData) { //remove old timespan data from map and update status in cache
-			let cache = this.cache[this.timeSpan];
-			for(let i = 0; i < cache.tileIds.length; i++) {
-				cache[cache.tileIds[i]].onMap = false;
-			}
+			let cache = this.cache[this.timeSpan][this.zoomRange];
+			this.setOnMapFlagsFalse(cache);
 		}
 		this.timeSpan = newTimeSpan;
 		this.setState({ trailInfoData: emptyTrailData }, this.updateMapData); //set empty map data and update for new time
@@ -127,7 +148,7 @@ class App extends Component {
 	refreshHandler = () => {
 		console.log("Refresh data clicked");
 		if(!this.loading()) {
-            this.cache = emptyCache();
+            this.cache = createEmptyCache(this.allZoomRanges);
             this.setState({ trailInfoData: emptyTrailData });
             this.updateMapData((success) => {
                 if(success) {
@@ -145,8 +166,6 @@ class App extends Component {
 
 	//use this function to return current loading status of map data
 	loading = () => {
-		// let isLoading = this.isLoading;
-		// let isInTransition = this.isLoading !== this.state.isLoading;
 		return this.isLoading;
 	};
 
@@ -163,8 +182,7 @@ class App extends Component {
     };
 
 	//set params for the data that needs to be displayed on map
-	//TODO: don't load data if displayAll is off
-	updateMapHandler = (top, bot, left, right, zoom) => {
+	updateMapHandler = (top, bot, left, right, zoom, forceUpdate = false) => {
 		if(this.updateMapParams.zoom !== zoom || this.updateMapParams.top !== top || this.updateMapParams.bot !== bot
 			|| this.updateMapParams.left !== left || this.updateMapParams.right !== right) {
 			this.updateMapParams = {
@@ -174,49 +192,44 @@ class App extends Component {
 				left: left,
 				right: right
 			};
-			if(!this.loading()) {
-				this.updateMapData();
-			} else if(!this.updateQueued){ //if already loading, queue update function to wait before updating again
-				setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
-				this.updateQueued = true;
-			}
+			if(this.state.displayAll || forceUpdate) { //if display data is toggled on, update map
+                if (!this.loading()) {
+                    this.updateMapData();
+                } else if (!this.updateQueued) { //if already loading, queue update function to wait before updating again
+                    setTimeout(this.updateMapData, 500); //prevents multiple simultaneous requests to backend data service
+                    this.updateQueued = true;
+                }
+            }
 		}
 	};
 
 	//check if data is present for all of current view window; if not, request new data from cloud service
     //done -> a function to call when done
-	updateMapData = (done) => {
+	updateMapData = (done = () => {}) => {
 		if(this.loading()) { //if already loading, keep waiting before updating again
 			setTimeout(this.updateMapData, 500, done);
 		} else if(this.updateMapParams.zoom >= 4) { //update map if zoom is great enough to limit number of tiles
 			this.updateQueued = false;
 			this.setLoading(true);
 
-			let startTime = 0;
 			let now = new Date().valueOf();
 			//calculate startTime
-			switch (this.timeSpan) {
-				case "pastDay":
-					startTime = now - millisecTimes.day;
-					break;
-				case "pastWeek":
-					startTime = now - millisecTimes.week;
-					break;
-				case "pastMonth":
-					startTime =  now - millisecTimes.month;
-					break;
-				case "pastYear":
-					startTime = now - millisecTimes.year;
-					break;
-				case "allTime":
-					break;
-				default:
-					console.error("In data for valid time span is being requested! Map failed to update!");
-					this.setLoading(false);
-					return;
+			let toSubtract = millisecTimes[this.timeSpan];
+			if(toSubtract === undefined) {
+                console.error("In data for valid time span is being requested! Map failed to update!");
+                this.setLoading(false);
+                return;
 			}
+            let startTime = now - toSubtract;
 
 			if(this.state.cacheData) {
+				let newZoomRange = Utility.rangeFromZoom(this.allZoomRanges, this.updateMapParams.zoom);
+				if(newZoomRange !== this.zoomRange) { //zoom range has changed
+                    this.setOnMapFlagsFalse(this.cache[this.timeSpan][this.zoomRange]); //current data will be taken off map
+                    this.zoomRange = newZoomRange;
+                    this.setState({ trailInfoData: emptyTrailData }); //set empty data until new data is processed
+                    console.log("Updating map, zoomRange:", this.zoomRange);
+                }
 				//tiles that are currently within map window view
 				let tileIds = Utility.listOfTiles(this.updateMapParams.top, this.updateMapParams.bot, this.updateMapParams.left,
 					this.updateMapParams.right);
@@ -225,9 +238,8 @@ class App extends Component {
 				//fetch data if not in cache
                 let needData = cacheResult.tileIdsNeeded.length > 0;
 				if(needData) {
-					// this.tileIdOfLoading = cacheResult.tilesNeeded; //Ids of tiles for which data will need to be added to cache later
 					Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-						this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan, done);
+						this.updateMapParams.bot, startTime, this.updateMapParams.zoom, this.newDataHandler, this.timeSpan, done);
 				} else {
 					this.setLoading(false);
 				}
@@ -240,10 +252,13 @@ class App extends Component {
 							featureCount: cacheResult.featureCount
                         }
 					}, this.timeSpan, needData ? () => {} : done, false);
+				} else if(!needData) { //if there is no data to add to map and no data needed
+					done(true, "Map is up to date", this.state.trailInfoData.featureCount === 0);
+					this.setState({ displayAll: this.state.trailInfoData.featureCount > 0});
 				}
 			} else { //data not cached, always request from data service
 				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
-					this.updateMapParams.bot, startTime, this.newDataHandler, this.timeSpan, done);
+					this.updateMapParams.bot, startTime, this.updateMapParams.zoom, this.newDataHandler, this.timeSpan, done);
 			}
 		} else {
 			this.updateQueued = false;
@@ -252,9 +267,26 @@ class App extends Component {
 		}
 	};
 
+	//set ".onMap" flags false for all tiles in cache
+	setOnMapFlagsFalse = (cache) => {
+        if(cache !== undefined) {
+            for(let i = 0; i < cache.tileIds.length; i++) {
+                cache[cache.tileIds[i]].onMap = false;
+            }
+        }
+	};
+
     //checks cache for all data corresponding to lookForTiles
     checkCache = (lookForTiles) => {
-    	let cache = this.cache[this.timeSpan];
+    	let cache = this.cache[this.timeSpan][this.zoomRange];
+    	if(cache === undefined) { //can't find cache
+    		return {
+    			tileIdsNeeded: lookForTiles, //need all tiles
+			    tiles: [],
+			    featureCount: 0
+		    };
+	    }
+
         let tileIdsNeeded = [];
         let tiles = [];
         let featureCount = 0;
@@ -279,8 +311,10 @@ class App extends Component {
     };
 
 	//update tiles in cache with data (features) returned from server, and return all features to be displayed
-	processDataUpdate = (timespan, tiles) => {
-		let cache = this.cache[timespan];
+	processDataUpdate = (timeSpan, zoomRange, tiles) => {
+		console.log("TimeSpan:", timeSpan);
+		console.log("ZoomRange:", zoomRange);
+		let cache = this.cache[timeSpan][zoomRange];
 		//for each tile if it's not in cache or present on map, add to cache
 		for(let i = 0; i < tiles.length; i++) {
 			let tile = tiles[i];
@@ -291,7 +325,7 @@ class App extends Component {
 			}
 			cache[tileId] = tile; //add/update tile in cache
 		}
-		console.log("Cache for " + timespan + " updated:", cache);
+		console.log("Cache for time span: " + timeSpan + " and zoom range: " + zoomRange + " updated:", cache);
 
 		//up to-date features to display
 		let displayTiles = [];
@@ -325,7 +359,12 @@ class App extends Component {
                         featureCount: trailInfo.data.featureCount
                     }
                 } else if (fromServer) { //if from server update/process cache, otherwise place old + new
-                    displayTiles = this.processDataUpdate(timespan, trailInfo.data.tiles);
+                	if(!Utility.arrayElemEqual(trailInfo.data.availableZoomRanges, this.allZoomRanges)) { //update zoom range option and re-build cache
+						this.allZoomRanges = trailInfo.data.availableZoomRanges;
+						this.cache = createEmptyCache(this.allZoomRanges);
+						this.zoomRange = trailInfo.data.zoomRange;
+	                }
+                    displayTiles = this.processDataUpdate(timespan, trailInfo.data.zoomRange, trailInfo.data.tiles);
                 } else { //if from cache
                     displayTiles = {
                         tiles: this.state.trailInfoData.tiles.concat(trailInfo.data.tiles),
@@ -337,7 +376,7 @@ class App extends Component {
                     dataVersion: this.state.dataVersion + 1,
                     displayAll: displayTiles.featureCount > 0
                 });
-                call(true, msg);
+                call(true, msg, displayTiles.featureCount === 0);
             } catch (e) {
                 this.setState({ displayAll: false });
                 console.error("Error when trying to process new data:", e);
@@ -365,6 +404,8 @@ class App extends Component {
                 </header>
 	            <div id="App-body">
 		            <ControlPanel displayAll={this.state.displayAll} displayAllHandler={this.displayAllHandler}
+		                          displayPoints={this.state.displayPoints} displayPointsHandler={this.displayPointsHandler}
+		                          displayRoughness={this.state.displayRoughness} displayRoughnessHandler={this.displayRoughnessHandler}
 		                          topoMap={this.state.topoMap} mapTypeHandler={this.mapTypeHandler}
 		                          cacheData={this.state.cacheData} cacheDataHandler={this.cacheDataHandler}
 		                          timeHandler={this.timeChangeHandler} timeOptions={timeOptions}
@@ -373,7 +414,8 @@ class App extends Component {
 		            <MapDisplay dataType="trailRoughness" dataVersion={this.state.dataVersion}
                                 trailInfoTiles={this.state.trailInfoData.tiles}
 		                        dataVisible={this.state.displayAll} topoMap={this.state.topoMap}
-		                        updateHandler={this.updateMapHandler}
+		                        pointsVisible={this.state.displayPoints} roughnessVisible={this.state.displayRoughness}
+		                        updateHandler={this.updateMapHandler} zoomRanges={this.allZoomRanges}
 		            />
 	            </div>
 				<LoadIcon isLoading={this.state.isLoading}/>

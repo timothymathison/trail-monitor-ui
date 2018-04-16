@@ -6,7 +6,7 @@ h4 {
 #App {
     width: 100%;
     height: 100%;
-    position: absolute;
+    position: fixed;
     top: 0;
     bottom: 0;
     text-align: center;
@@ -14,6 +14,7 @@ h4 {
     flex-flow: column nowrap;
     justify-content: space-around;
     overflow: auto;
+    color: #dfe6e9;
 }
 
 #polaris-logo {
@@ -44,13 +45,12 @@ h4 {
 }
 
 #App-header {
-    background-color: #222;
+    background-color: #222222;
     box-sizing: border-box;
     /*min-height: 50px !important;*/
-    height: 60px;
+    height: 3.75em;
     width: 100%;
     padding: 0 10px;
-    color: #e4e4e4;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
@@ -70,13 +70,11 @@ h4 {
 }
 
 #control-panel {
-    background-color: #8a8b8d;/*gray;*/
+    background-color: #636e72; /* #8a8b8d;*/
     width: 20%;
-    height: fit-content;
     min-width: 200px;
     flex-grow: 1;
     z-index: 10;
-    /*TODO: fix control panel not filling height of page*/
 }
 
 #open-close-panel {
@@ -84,15 +82,35 @@ h4 {
 }
 
 #map-container {
-    background-color: #e4e4e4;
+    background-color: #b2bec3;
     width: 80%;
-    /*min-height: 400px;*/
     flex-grow: 4;
     z-index: 9;
+    color: black;
+}
+
+.legend {
+    position: absolute;
+    margin-top: 10px;
+    margin-left: 10px;
+    height: 60%;
+    z-index: 12;
+}
+
+.legend div {
+    width: 0.75em;
+    height: 18%;
+    margin: 0 auto;
+}
+
+.legend p {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-align: center;
 }
 
 .hidden {
-    /*display: none;*/
     visibility: hidden;
     z-index: 0;
 }
@@ -108,19 +126,22 @@ h4 {
 
 .toggle, .select {
     margin: 10px auto;
+    padding: 0 0.75em;
     min-width: 200px;
-    z-index: 11;
+    box-sizing: border-box;
+    /*z-index: 11;*/
 }
 
 .button {
     margin: 10px auto;
+    padding: 0 0.75em;
     width: 150px;
     height: 30px;
-    background-color: #2a57ab;
-    color: #e4e4e4;
+    background-color: #0984e3; /*#2a57ab;*/
+    color: #dfe6e9;
     font-size: 1em;
     border-radius: 5px;
-    border: solid black 1px;
+    border: solid #2d3436 1px;
     text-align: center;
     cursor: pointer;
 }
@@ -133,18 +154,20 @@ h4 {
 .loading {
     position: fixed;
     z-index: 100000;
-    /*width: 200px;*/
-    /*height: 150px;*/
-    /*margin: -75px 0 0 -100px;*/
+    width: 6em;
+    margin-left: -3em;
     top: 50%;
     left: 50%;
-    color: #2a57ab;
+    color: #0984e3;
     display: flex;
     flex-flow: column;
     align-items: center;
-    text-align: center;
     font-weight: bold;
     font-size: 1.5em;
+}
+
+.loading > div {
+    margin-left: -35px;
 }
 
 .alert-box {
@@ -156,7 +179,7 @@ h4 {
     box-sizing: border-box;
     padding: 1em 0;
     text-align: center;
-    color: #e4e4e4;
+    color: #dfe6e9;
     margin: 0 0 0 -25%;
     border: 2px solid;
     border-radius: 5px;
@@ -191,16 +214,15 @@ h4 {
 }
 
 div.Select-control {
-    background-color: #5d5d5d !important;
-    color: #e4e4e4 !important;
+    background-color: #2d3436 !important;
     border-radius: 5px;
-    border-color: #2a57ab !important;
+    border-color: #3c9aff !important;
 }
 
 .Select-value-label, div.Select-option, .Select-menu-outer {
-    color: #e4e4e4 !important;
-    background-color: #5d5d5d !important;
-    border-color: #2a57ab !important;
+    color: #dfe6e9 !important;
+    background-color: #2d3436 !important;
+    border-color: #3c9aff !important;
 }
 
 .Select-menu-outer div:hover {
@@ -208,18 +230,19 @@ div.Select-control {
 }
 
 
-@media only screen and (max-width: 999px) and (max-height: 700px) {
+@media only screen and (max-width: 999px) {
     #polaris-logo {
         width: 90px;
         height: 15px;
     }
 
     #control-panel {
+        background-color: rgba(99, 110, 114, 0.92);
         position: fixed;
-        top: 60px;
         width: 100%;
         padding-top: 30px;
-        transition: top 0.5s linear;
+        box-sizing: border-box;
+        transition: all 0.5s linear;
     }
 
     #open-close-panel {
@@ -227,13 +250,20 @@ div.Select-control {
         position: fixed;
         top: 60px;
         left: 50%;
-        margin: 0 0 0 -50px;
+        margin: 0 0 0 -35px;
         z-index: 11;
-        width: 100px;
+        width: 70px;
+        border-radius: 0 0 25px 25px;
     }
 
     .hidden-panel {
-        top: -300px !important;
+        top: -70% !important;
+        /*bottom: 100% !important;*/
+    }
+
+    .open-panel {
+        top: 60px !important;
+        /*bottom: calc(80% - 60px) !important;*/
     }
 
     .alert-box {
@@ -242,9 +272,5 @@ div.Select-control {
         left: 0;
         width: 100%;
         margin: 0;
-    }
-
-    .loading {
-        left: 45%;
     }
 }
