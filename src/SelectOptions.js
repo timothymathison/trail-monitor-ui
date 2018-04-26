@@ -30,10 +30,18 @@ class SelectOptions extends Component {
 		);
 	};
 
+	renderBtnSelect = () => {
+		let elem = [];
+		elem.push(<div>I'm here</div>);
+        elem.push(<div>I'm here</div>);
+		return elem;
+	};
+
 	render() {
 		return (
 			<div className="select">
 				{this.renderSelect()}
+				{this.renderBtnSelect()}
 			</div>
 		);
 	}
