@@ -67,7 +67,7 @@ class App extends Component {
 		super(props);
 		this.state = {
 			displayAll: false,
-			displayPoints: false,
+			displayPoints: true, //lines displayed when this is set to false (lines are a beta feature)
 			displayRoughness: true,
 			topoMap: false,
             //used for rendering, should be set when isLoading above is set
