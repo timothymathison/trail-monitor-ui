@@ -11,11 +11,11 @@ import LoadIcon from './LoadIcon'
 
 //must be same as list of millisecTimes above
 const timeOptions = [
-    {value: "day", label: "Past 24 Hours"},
-    {value: "week", label: "Past 7 Days"},
-    {value: "month", label: "Past 30 Days"},
-    {value: "year", label: "Past Year"},
-    {value: "all", label: "All Time"}
+    {value: "day", label: "Day"},
+    {value: "week", label: "Week"},
+    {value: "month", label: "Month"},
+    {value: "year", label: "Year"},
+    {value: "all", label: "All"}
 ];
 const defaultTimeSpan = timeOptions[4].value;
 
