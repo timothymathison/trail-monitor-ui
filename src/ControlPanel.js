@@ -16,10 +16,13 @@ class ControlPanel extends Component {
 
 	//on smaller devices, control panel can be opened and closed/hidden
 	toggleOpen = () => {
+		let mapContainer = document.getElementById("map-container"); //get map container
 		if(this.state.open) {
 			this.setState({ open: false });
+			mapContainer.removeEventListener("click", this.toggleOpen) //remove event listener when panel is closed
 		} else {
 			this.setState({ open: true });
+            mapContainer.addEventListener("click", this.toggleOpen); //add event listener so panel will close when map is clicked
 		}
 	};
 
