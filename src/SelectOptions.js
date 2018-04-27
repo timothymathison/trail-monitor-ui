@@ -1,68 +1,62 @@
 import React, {Component} from 'react';
-import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
 const btnStyle = {
 	minWidth: "3em",
 	height: "2em",
-	margin: "10px, 0",
+	margin: "2.5px 0",
 	padding: "0.4em 0",
 	fontSize: "1em",
-	border: "solid #0984e3 1px",
+	borderStyle: "solid",
+	borderWidth: "1px",
 	boxSizing: "border-box",
-	backgroundColor: "#2d3436"
+	cursor: "pointer"
 };
 
 class SelectOptions extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			selected: props.default,
+			selected: props.default.value,
 			options: props.options
 		}
 	}
 
     shouldComponentUpdate(newProps, newState) {
-		return this.state.options.length !== newState.options.length;
+		return this.state.selected !== newState.selected
+			|| this.state.options.length !== newState.options.length;
     }
 
 	handleChange = (selected) => {
-		console.log(selected.target.id);
-		// if(this.state.selected.value !== selected.value) {
-		// 	this.setState({ selected: selected });
-		// 	this.props.handler(selected.value);
-		// }
-	};
-
-	renderSelect = () => {
-		//TODO: use non-drop-down style select
-		return(
-			<Select name="Time Span" className="dark"
-			        value={this.state.selected && this.state.selected.value}
-			        onChange={this.handleChange}
-			        removeSelected={true}
-			        clearable={false}
-			        options={this.props.options}
-			/>
-		);
+		let val = selected.target.id;
+		if(this.state.selected !== val) {
+            this.setState({ selected: val });
+            this.props.handler(val);
+		}
 	};
 
 	renderBtnSelect = () => {
 		let options = this.state.options;
 		let selections = [];
-		let style = btnStyle;
-		style.width = (100 / (options.length > 0 ? options.length : 1)).toString() + "%";
-        let className;
+		let width = (100 / (options.length > 0 ? options.length : 1)).toString() + "%";
+
         let option;
+        let className;
 		for(let i = 0; i < options.length; i++) {
         	option = options[i];
-        	if(option.value === this.state.selected.value) {
-                className = "btn-option-selected"
-	        } else {
+
+            let elemStyle = Object.assign({}, btnStyle);
+            elemStyle.width = width;
+            elemStyle.borderColor = this.props.colors.active;
+            if(option.value === this.state.selected) {
+                elemStyle.backgroundColor = this.props.colors.active;
+                className = "btn-option-selected";
+            } else {
+            	elemStyle.backgroundColor = this.props.colors.inactive;
                 className = "btn-option";
             }
 
-            selections.push(<div key={option.value} id={option.value} className={className} style={style} onClick={this.handleChange}>{option.label}</div>)
+            selections.push(<div key={option.value} id={option.value} className={className} style={elemStyle} onClick={this.handleChange}>{option.label}</div>)
 		}
 		return selections;
 	};
@@ -70,7 +64,7 @@ class SelectOptions extends Component {
 	render() {
 		return (
 			<div className="select">
-				{/*{this.renderSelect()}*/}
+				<h4 style={{width: "100%", margin: "0"}}>{this.props.name}</h4>
 				{this.renderBtnSelect()}
 			</div>
 		);

@@ -26,14 +26,6 @@ class ControlPanel extends Component {
 		}
 	};
 
-	//attempt at fixing issue with iphone launching keyboard when select clicked
-    // componentDidMount() {
-    // 	let input = document.getElementById("control-panel").getElementsByClassName("select")[0].getElementsByTagName("input")[0];
-    // 	input.readonly = true;
-    // 	// input.disabled = true;
-    //     console.log(input);
-    // }
-
 	render() {
 		return(
 			<div id="control-panel" className={"flexDefault" + (this.state.open ? " open-panel" : " hidden-panel")}>
@@ -42,7 +34,8 @@ class ControlPanel extends Component {
 				               innerLabels={["Topo", "Dark"]} colors={["#00b894", "#2d3436"]}/>
 				<ControlToggle label="Show All Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
 				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
-                <SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
+                <SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}
+                               name="Past Time Span" colors={{active: "#0984e3", inactive: "#2d3436"}}/>
 				<ControlToggle label="Display Type" type="select" value={this.props.displayPoints} handler={this.props.displayPointsHandler}
 				               innerLabels={["point", "line"]} colors={["#d63031", "#0984e3"]}/>
 				<ControlToggle label="Data Source" type="select" value={this.props.displayRoughness} handler={this.props.displayRoughnessHandler}

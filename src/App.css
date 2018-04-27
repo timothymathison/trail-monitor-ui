@@ -129,7 +129,6 @@ h4 {
     padding: 0 0.75em;
     min-width: 200px;
     box-sizing: border-box;
-    /*z-index: 11;*/
 }
 
 .select {
@@ -138,6 +137,11 @@ h4 {
     flex-flow: row wrap;
     justify-content: center;
     width: 90%;
+}
+
+.btn-option:hover {
+    background-color: #454c4e !important;
+    border-color: #454c4e !important;
 }
 
 .button {
@@ -220,23 +224,6 @@ h4 {
 .up > img {
     transform: rotate(-90deg);
 }
-
-div.Select-control {
-    background-color: #2d3436 !important;
-    border-radius: 5px;
-    border-color: #3c9aff !important;
-}
-
-.Select-value-label, div.Select-option, .Select-menu-outer {
-    color: #dfe6e9 !important;
-    background-color: #2d3436 !important;
-    border-color: #3c9aff !important;
-}
-
-.Select-menu-outer div:hover {
-    background-color: #3c9aff !important;
-}
-
 
 @media only screen and (max-width: 999px) {
     #polaris-logo {
