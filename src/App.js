@@ -107,6 +107,7 @@ class App extends Component {
 		if(!this.state.displayAll) {
 			this.alert(alerts.warn, "Show data is currently turned off", 5000);
 		} else if(this.zoomRange !== this.allZoomRanges[this.allZoomRanges.length - 1]) {
+
 			this.alert(alerts.warn, "Zoom in to see detailed data", 5000);
 		}
 	};
@@ -257,6 +258,7 @@ class App extends Component {
 					this.setState({ displayAll: this.state.trailInfoData.featureCount > 0});
 				}
 			} else { //data not cached, always request from data service
+				this.zoomRange = Utility.rangeFromZoom(this.allZoomRanges, this.updateMapParams.zoom);
 				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
 					this.updateMapParams.bot, startTime, this.updateMapParams.zoom, this.newDataHandler, this.timeSpan, done);
 			}
