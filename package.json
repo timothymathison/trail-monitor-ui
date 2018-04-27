@@ -1,6 +1,6 @@
 {
   "name": "trail-monitor-ui",
-  "version": "0.5.2",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "env-cmd": "^7.0.0",
@@ -9,7 +9,6 @@
     "react-dom": "^16.2.0",
     "react-mapbox-gl": "^3.8.0",
     "react-scripts": "1.1.0",
-    "react-select": "^1.2.1",
     "react-spinners": "^0.2.6",
     "react-toggle-button": "^2.2.0"
   },

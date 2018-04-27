@@ -16,20 +16,15 @@ class ControlPanel extends Component {
 
 	//on smaller devices, control panel can be opened and closed/hidden
 	toggleOpen = () => {
+		let mapContainer = document.getElementById("map-container"); //get map container
 		if(this.state.open) {
 			this.setState({ open: false });
+			mapContainer.removeEventListener("click", this.toggleOpen) //remove event listener when panel is closed
 		} else {
 			this.setState({ open: true });
+            mapContainer.addEventListener("click", this.toggleOpen); //add event listener so panel will close when map is clicked
 		}
 	};
-
-	//attempt at fixing issue with iphone launching keyboard when select clicked
-    // componentDidMount() {
-    // 	let input = document.getElementById("control-panel").getElementsByClassName("select")[0].getElementsByTagName("input")[0];
-    // 	input.readonly = true;
-    // 	// input.disabled = true;
-    //     console.log(input);
-    // }
 
 	render() {
 		return(
@@ -39,7 +34,8 @@ class ControlPanel extends Component {
 				               innerLabels={["Topo", "Dark"]} colors={["#00b894", "#2d3436"]}/>
 				<ControlToggle label="Show All Data" type="on-off" value={this.props.displayAll} handler={this.props.displayAllHandler}/>
 				<ControlToggle label="Cache Data" type="on-off" value={this.props.cacheData} handler={this.props.cacheDataHandler}/>
-                <SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}/>
+                <SelectOptions handler={this.props.timeHandler} options={this.props.timeOptions} default={this.props.timeOptions[4]}
+                               name="Past Time Span" colors={{active: "#0984e3", inactive: "#2d3436"}}/>
 				<ControlToggle label="Display Type" type="select" value={this.props.displayPoints} handler={this.props.displayPointsHandler}
 				               innerLabels={["point", "line"]} colors={["#d63031", "#0984e3"]}/>
 				<ControlToggle label="Data Source" type="select" value={this.props.displayRoughness} handler={this.props.displayRoughnessHandler}

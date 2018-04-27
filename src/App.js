@@ -11,11 +11,11 @@ import LoadIcon from './LoadIcon'
 
 //must be same as list of millisecTimes above
 const timeOptions = [
-    {value: "day", label: "Past 24 Hours"},
-    {value: "week", label: "Past 7 Days"},
-    {value: "month", label: "Past 30 Days"},
-    {value: "year", label: "Past Year"},
-    {value: "all", label: "All Time"}
+    {value: "day", label: "Day"},
+    {value: "week", label: "Week"},
+    {value: "month", label: "Month"},
+    {value: "year", label: "Year"},
+    {value: "all", label: "All"}
 ];
 const defaultTimeSpan = timeOptions[4].value;
 
@@ -67,7 +67,7 @@ class App extends Component {
 		super(props);
 		this.state = {
 			displayAll: false,
-			displayPoints: false,
+			displayPoints: true, //lines displayed when this is set to false (lines are a beta feature)
 			displayRoughness: true,
 			topoMap: false,
             //used for rendering, should be set when isLoading above is set
@@ -107,6 +107,7 @@ class App extends Component {
 		if(!this.state.displayAll) {
 			this.alert(alerts.warn, "Show data is currently turned off", 5000);
 		} else if(this.zoomRange !== this.allZoomRanges[this.allZoomRanges.length - 1]) {
+
 			this.alert(alerts.warn, "Zoom in to see detailed data", 5000);
 		}
 	};
@@ -257,6 +258,7 @@ class App extends Component {
 					this.setState({ displayAll: this.state.trailInfoData.featureCount > 0});
 				}
 			} else { //data not cached, always request from data service
+				this.zoomRange = Utility.rangeFromZoom(this.allZoomRanges, this.updateMapParams.zoom);
 				Utility.requestData(this.updateMapParams.top, this.updateMapParams.left, this.updateMapParams.right,
 					this.updateMapParams.bot, startTime, this.updateMapParams.zoom, this.newDataHandler, this.timeSpan, done);
 			}
