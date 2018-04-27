@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import 'react-select/dist/react-select.css';
 
 const btnStyle = {
 	minWidth: "3em",
