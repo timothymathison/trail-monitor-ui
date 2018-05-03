@@ -199,17 +199,17 @@ h4 {
 }
 
 .success {
-    background-color: #2fcc70b3;
+    background-color: rgba(47, 204, 112, 0.7);
     border-color: #2fcc70;
 }
 
 .error {
-    background-color: #e84c3db3;
+    background-color: rgba(232, 76, 61, 0.7);
     border-color: #e84c3d;
 }
 
 .warning {
-    background-color: #f1c40fb3;
+    background-color: rgba(241, 196, 15, 0.7);
     border-color: #f1c40f;
 }
 
