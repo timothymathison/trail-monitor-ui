@@ -43,7 +43,7 @@ These control what resources the application uses when in development or deploye
 
 Current environment variable definitions:
 - `REACT_APP_MAPBOX_API_KEY=` key that gives application access to Mapbox data and resources
-(Note: currently connected to personal account belonging to Timothy Mathison; if Mapbox errors occur, try replacing with a new key)
+(__Note:__ currently connected to personal account belonging to Timothy Mathison; if Mapbox errors occur, try replacing with a new key)
 - `REACT_APP_DATA_SERVICE=` name that informs the application what type of data service it is connected to
 - `REACT_APP_AWS_API_URL=` url that the application uses to connect to the data service, from which to request data
 
