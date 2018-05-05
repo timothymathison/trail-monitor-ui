@@ -1,4 +1,4 @@
-# Trail Monitor Web Portal
+# Trail Monitor Web Portal/Application
 
 ---
 
@@ -69,6 +69,29 @@ Current `.env*` files:
 - react-mapbox-gl: v3.8.0
 - react-spinners: v0.2.6
 - react-toggle-button: v2.2.0
+
+---
+
+## Design - Algorithms and Logic
+
+Much of the core logic within this applications focuses on handling and caching tile data.
+It is important to note that the tiles referred to should not be confused with Mapbox vector tiles (used to render the map).
+
+Each tile corresponds to a map square separated by integer longitude and latitude lines and a particular zoom range.
+The Mapbox zoom values separating each zoom range are determined by the data service when it processes individual trail points into visualization data.
+For a more detailed description of the format and information contained within the visualization data coming from the data service,
+__see the README in the Trail Monitor Cloud repository__.
+
+The core application logic determines whether to update the data on the map whenever the map viewing window changes or the user selects a different display option.
+If an update is required, the application first checks the cache (when enabled) and, if possible, updates the trail data on the map.
+
+When data tiles are required which the application does not posses, it requests data for the current viewing window, time span, and zoom,
+after which it caches (when enabled) the tiles returned for the current time span and zoom range.
+When the application wishes to show trail conditions to the user, it passes the correct tiles to the __MapDisplay__ Component,
+which extracts the point and line data (in GeoJson Feature format) from each tile
+and uses the contained information to render a visualization of the trail conditions.
+
+---
 
 ## References
 
