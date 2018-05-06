@@ -8,9 +8,11 @@ Trail conditions are visualized as a dynamically drawn and colored feature layer
 
 ## Running and Deploying
 
-Install dependencies: `npm install`
+(Prerequisite: Install Node and NPM)
 
-Run in development mode: `npm start`
+Install project dependencies: `npm install`
+
+Run locally in development mode: `npm start`
 
 ---
 
