@@ -47,7 +47,7 @@ Note 2: See references below for more information about Amazon S3
 Special resource identifiers and API keys are stored in `.env*` files.
 These control what resources the application uses when in development or deployed in production.
 
-Current environment variable definitions:
+##### Current environment variable definitions:
 - `REACT_APP_MAPBOX_API_KEY=` key that gives application access to Mapbox data and resources
 (__Note:__ currently connected to personal account belonging to Timothy Mathison; if Mapbox errors occur, try replacing with a new key)
 - `REACT_APP_DATA_SERVICE=` name that informs the application what type of data service it is connected to
@@ -60,7 +60,7 @@ To access an environment variable within React Javascript, access: `process.env.
 
 All environment variable names must begin with `REACT_APP_`
 
-Current `.env*` files:
+##### Current `.env*` files:
 - `.env` (contains default environment variable definitions)
 - `.env.production` (contains definitions which override the above defaults in a production build of the project)
 - `.env.production.local` (this file is ignored by git, but can be used to override above definitions when deploying a production build from a specific machine)
