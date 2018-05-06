@@ -10,19 +10,21 @@ Trail conditions are visualized as a dynamically drawn and colored feature layer
 
 (Prerequisite: Install Node and NPM)
 
-Install project dependencies: `npm install`
+#### Install project dependencies: `npm install`
 
-Run locally in development mode: `npm start`
+#### Run locally in development mode: `npm start`
 
 ---
 
-Build project for production: `npm run build`  (production code will be in the build folder)
+#### Build project for production: `npm run build`
+(production code will be in the build folder)
 
 OR
 
-Build for production and deploy/upload to AWS S3: `npm run deploy` __Note: First set up CLI command line tool__
+#### Build for production and deploy/upload to AWS S3: `npm run deploy`
+__Note:__ First set up CLI command line tool
 
-Set Up CLI:
+##### Set Up CLI:
 
 - Install: `pip install awscli --upgrade --user`
 - Generate Access Key under "Deployment" user in AWS IAM console
