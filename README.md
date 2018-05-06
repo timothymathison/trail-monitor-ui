@@ -16,12 +16,14 @@ Run in development mode: `npm start`
 
 Build project for production: `npm run build`  (production code will be in the build folder)
 
-OR build and deploy/upload to S3: `npm run deploy` __Note: First set up CLI command line tool__
+OR
+
+Build for production and deploy/upload to AWS S3: `npm run deploy` __Note: First set up CLI command line tool__
 
 Set Up CLI:
 
 - Install: `pip install awscli --upgrade --user`
-- Generate Access Key under "Deployment" user in IAM console
+- Generate Access Key under "Deployment" user in AWS IAM console
 - Configure credentials:
 ```
 $ aws configure
