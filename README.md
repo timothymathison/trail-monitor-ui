@@ -68,8 +68,8 @@ All environment variable names must begin with `REACT_APP_`
 
 ## Dependencies
 
-- React: v16.2.0
-- react-dom: v16.2.0
+- React: v16.3.2
+- react-dom: v16.3.2
 - env-cmd: v7.0.0
 - mapbox-gl: v0.44.2
 - react-mapbox-gl: v3.8.0
