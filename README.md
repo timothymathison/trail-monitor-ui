@@ -1,4 +1,4 @@
-# Trail Monitor Web Portal
+# Trail Monitor Web Portal/Application
 
 ---
 
@@ -8,20 +8,26 @@ Trail conditions are visualized as a dynamically drawn and colored feature layer
 
 ## Running and Deploying
 
-Install dependencies: `npm install`
+(Prerequisite: Install Node and NPM)
 
-Run in development mode: `npm start`
+#### Install project dependencies: `npm install`
+
+#### Run locally in development mode: `npm start`
 
 ---
 
-Build project for production: `npm run build`  (production code will be in the build folder)
+#### Build project for production: `npm run build`
+(production code will be in the build folder)
 
-OR build and deploy/upload to S3: `npm run deploy` __Note: First set up CLI command line tool__
+OR
 
-Set Up CLI:
+#### Build for production and deploy/upload to AWS S3: `npm run deploy`
+__Note:__ First set up CLI command line tool
+
+##### Set Up CLI:
 
 - Install: `pip install awscli --upgrade --user`
-- Generate Access Key under "Deployment" user in IAM console
+- Generate Access Key under "Deployment" user in AWS IAM console
 - Configure credentials:
 ```
 $ aws configure
@@ -36,15 +42,62 @@ Note 2: See references below for more information about Amazon S3
 
 ---
 
+## Environment
+
+Special resource identifiers and API keys are stored in `.env*` files.
+These control what resources the application uses when in development or deployed in production.
+
+##### Current environment variable definitions:
+- `REACT_APP_MAPBOX_API_KEY=` key that gives application access to Mapbox data and resources
+(__Note:__ currently connected to personal account belonging to Timothy Mathison; if Mapbox errors occur, try replacing with a new key)
+- `REACT_APP_DATA_SERVICE=` name that informs the application what type of data service it is connected to
+- `REACT_APP_AWS_API_URL=` url that the application uses to connect to the data service, from which to request data
+
+__Note:__ when a constant value is used within the code which may change when the environment or build purpose changes,
+it is best to define it with an environment variable.
+
+To access an environment variable within React Javascript, access: `process.env.<variable-name>`
+
+All environment variable names must begin with `REACT_APP_`
+
+##### Current `.env*` files:
+- `.env` (contains default environment variable definitions)
+- `.env.production` (contains definitions which override the above defaults in a production build of the project)
+- `.env.production.local` (this file is ignored by git, but can be used to override above definitions when deploying a production build from a specific machine)
+- `.env.development.local` (same as above, but for development mode)
+
 ## Dependencies
-- React: v16.2.0
-- react-dom: v16.2.0
+
+- React: v16.3.2
+- react-dom: v16.3.2
 - env-cmd: v7.0.0
-- mapbox-gl: v0.44.1
+- mapbox-gl: v0.44.2
 - react-mapbox-gl: v3.8.0
-- react-select: v1.2.1
 - react-spinners: v0.2.6
 - react-toggle-button: v2.2.0
+
+---
+
+## Design - Algorithms and Logic
+
+Much of the core logic within this applications focuses on handling and caching tile data.
+It is important to note that the tiles referred to should not be confused with Mapbox vector tiles (used to render the map).
+
+Each tile corresponds to a map square separated by integer longitude and latitude lines and a particular zoom range.
+The Mapbox zoom values separating each zoom range are determined by the data service when it processes individual trail points into visualization data.
+For a more detailed description of the format and information contained within the visualization data coming from the data service,
+__see the README in the Trail Monitor Cloud repository__.
+
+The core application logic determines whether to update the data on the map whenever the map viewing window changes or the user selects a different display option.
+If an update is required, the application first checks the cache (when enabled) and, if possible, updates the trail data on the map.
+
+When data tiles are required which the application does not posses, it requests data for the current viewing window, time span, and zoom,
+after which it caches (when enabled) the tiles returned for the current time span and zoom range.
+When the application wishes to show trail conditions to the user, it passes the correct tiles to the __MapDisplay__ Component,
+which extracts the point and line data (in GeoJson Feature format) from each tile
+and uses the contained information to render a visualization of the trail conditions.
+
+---
 
 ## References
 
