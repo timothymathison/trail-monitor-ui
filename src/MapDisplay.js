@@ -34,7 +34,7 @@ class MapDisplay extends Component {
 			dataVisible: props.dataVisible,
 			pointsVisible: props.pointsVisible,
 			roughnessVisible: props.roughnessVisible,
-			topoMap: props.topoMap,
+			topoMap: props.topoMap, //TODO: add satellite map option
 			trafficMax: 0
 		};
 	}
